@@ -82,9 +82,15 @@ if (defined('ADMIN')) {
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
-    expire_cookie('lbsid', '/admin', $secure);
-    expire_cookie('lbsid', '/admin/', $secure);
     session_start();
+    $dead = gmdate('D, d M Y H:i:s', time() - 42000) . ' GMT';
+    $secureFlag = $secure ? '; secure' : '';
+    foreach (['/admin', '/admin/'] as $path) {
+        header(
+            'Set-Cookie: lbsid=deleted; expires=' . $dead . '; Max-Age=0; path=' . $path . $secureFlag . '; HttpOnly; SameSite=Lax',
+            false
+        );
+    }
     setcookie(session_name(), session_id(), [
         'expires' => time() + $life,
         'path' => '/',
