@@ -1,4 +1,4 @@
-const CACHE = 'lb-v5';
+const CACHE = 'lb-v6';
 self.addEventListener('install', e => e.waitUntil(
   caches.open(CACHE).then(c => c.addAll(['./', 'assets/css/app.css', 'assets/js/app.js'])).then(() => self.skipWaiting())
 ));

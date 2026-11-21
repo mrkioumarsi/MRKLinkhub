@@ -60,7 +60,7 @@ $pageTitle = $showFa && $showEn
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Vazirmatn:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="assets/js/boot.js"></script>
-<link rel="stylesheet" href="assets/css/app.css?v=9">
+<link rel="stylesheet" href="assets/css/app.css?v=10">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="assets/js/app.js?v=8"></script>
 </head>
@@ -118,13 +118,11 @@ $pageTitle = $showFa && $showEn
   </section>
 <?php endif ?>
 </main>
-<div class="tools">
+<div class="bar">
+  <button class="btn" id="theme" type="button" aria-label="Theme"><i class="fa-solid fa-circle-half-stroke"></i></button>
 <?php if (count($enabled) > 1): ?>
   <button class="btn" id="lang" type="button" aria-label="Language"></button>
 <?php endif ?>
-  <button class="btn" id="theme" type="button" aria-label="Theme"><i class="fa-solid fa-circle-half-stroke"></i></button>
-</div>
-<div class="bar">
   <a class="btn" id="help" href="https://mrkioumarsi.ir" target="_blank" rel="noopener noreferrer" aria-label="<?= $lang === 'fa' ? 'راهنما' : 'Help' ?>"><i class="fa-solid fa-question"></i></a>
 </div>
 </body>

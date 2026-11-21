@@ -84,11 +84,7 @@ a {
 }
 
 body:has(.bar) .wrap {
-    padding-bottom: calc(92px + env(safe-area-inset-bottom))
-}
-
-body:has(.tools) .wrap {
-    padding-top: calc(68px + env(safe-area-inset-top))
+    padding-bottom: 92px
 }
 
 .glass {
@@ -104,26 +100,11 @@ body:has(.tools) .wrap {
     padding: 20px
 }
 
-.tools {
-    position: fixed;
-    z-index: 30;
-    top: calc(12px + env(safe-area-inset-top));
-    right: 12px;
-    display: flex;
-    gap: 6px;
-    margin: 0;
-    padding: 5px;
-    border-radius: 999px;
-    background: var(--f3);
-    border: 1px solid var(--bd);
-    box-shadow: var(--sh)
-}
-
 .bar {
     position: fixed;
     z-index: 30;
     left: 50%;
-    bottom: calc(12px + env(safe-area-inset-bottom));
+    bottom: 12px;
     transform: translateX(-50%);
     display: flex;
     justify-content: center;
@@ -136,13 +117,11 @@ body:has(.tools) .wrap {
     box-shadow: var(--sh)
 }
 
-.tools .btn,
 .bar .btn {
     border-radius: 999px;
     min-width: 46px
 }
 
-.tools .btn:hover,
 .bar .btn:hover {
     transform: none
 }
