@@ -60,6 +60,13 @@ input[type=color] {
     background: var(--card)
 }
 
+html:not([data-theme=dark]) input:not([type=checkbox]):not([type=file]):not([type=color]):not([type=hidden]),
+html:not([data-theme=dark]) textarea,
+html:not([data-theme=dark]) select,
+html:not([data-theme=dark]) input[type=color] {
+    border-color: rgba(27, 26, 46, .16)
+}
+
 input:focus,
 textarea:focus,
 select:focus {

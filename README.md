@@ -4,22 +4,37 @@ Bilingual link page (Persian and English) with an admin panel, visit and click s
 
 ## Install on cPanel
 
-1. In cPanel, open **MultiPHP Manager** and set the domain to **PHP 8.0 or newer**. `pdo_mysql` and `zip` must be enabled. `curl` is used for updates when it is available.
-2. Open **MySQL Databases**. Create a database and a user, then add the user to the database with **All Privileges**. Note the host (usually `localhost`), database name, user, and password. cPanel prefixes both names with your account name.
-3. Download the release zip from the [releases page](https://github.com/mrkioumarsi/MRKLinkhub/releases). In **File Manager**, open `public_html` (or the addon-domain document root). Upload the zip and extract it so `index.php` sits directly in that folder, next to `admin`, `inc`, `install`, and `uploads`.
-4. Select the `uploads` folder, then **Permissions**, and set it to `755`. The installer creates this folder when it can.
-5. Visit `https://your-domain.example/install/`.
-6. Enter the database host, name, user, and password. Choose an admin username of 3 to 30 letters or digits, and a password of at least 10 characters. Submit **Install**.
-7. The installer writes `inc/config.php` and then deletes itself. If the `install` folder is still there, delete it. Open `/admin/` and sign in.
-8. In **Settings**, fill in the profile, languages, and PWA icon. The PWA icon should be a square PNG, JPG, or WebP of at least 512 pixels.
+1. Open **MultiPHP Manager** and set the domain to **PHP 8.0 or newer**. In **Select PHP Version** (or MultiPHP INI), enable `pdo_mysql` and `zip`. Enable `curl` as well when you want updates from the admin panel.
+2. Open **MySQL Databases**.
+   1. Create a database.
+   2. Create a database user and set its password.
+   3. Add that user to the database with **All Privileges**.
+   4. Write down the host (usually `localhost`), the full database name, the full username, and the password. cPanel adds your account name in front of the database name and the username.
+3. Open the [releases page](https://github.com/mrkioumarsi/MRKLinkhub/releases) and download the **Source code (zip)** of the latest release.
+4. In **File Manager**, go to `public_html`, or to the document root of the addon domain.
+5. Upload the zip into that folder and extract it.
+6. Move the files up if they were extracted into a subfolder. `index.php` must sit directly in the document root, next to the `admin`, `inc`, `install`, and `uploads` folders.
+7. Open the `uploads` folder and set its permission to `755`. The installer creates this folder when the server allows it.
+8. Visit `https://your-domain.example/install/`.
+9. Fill in the form:
+   - Database host, database name, database user, and database password from step 2.
+   - Admin username: 3 to 30 letters or digits.
+   - Admin password: at least 10 characters.
+10. Click **Install**. The installer creates the tables, writes `inc/config.php`, and deletes itself.
+11. If the `install` folder is still there, delete it.
+12. Open `https://your-domain.example/admin/` and sign in.
+13. In **Settings**, save the profile, the languages, and the PWA icon. Use a square PNG, JPG, or WebP of at least 512 pixels for the icon.
 
 `inc/config.php` holds the database password. Do not share that file or commit it. The sample without secrets is `inc/config.sample.php`.
 
 ## Update from the admin panel
 
-Sign in, open **Settings**, and use **Update from GitHub**. The panel reads the latest release of `mrkioumarsi/MRKLinkhub`, downloads the zip over HTTPS, and replaces the site files. **Reinstall current version** installs that same release again when the site is already on the latest version.
+1. Sign in at `/admin/`.
+2. Open **Settings**.
+3. Use **Update from GitHub** when a newer release exists.
+4. Use **Reinstall current version** to install the latest release again when the site is already on that version.
 
-The update keeps these in place:
+The update downloads the release zip over HTTPS and replaces the site files. It keeps these in place:
 
 - `inc/config.php`
 - everything inside `uploads`
@@ -32,3 +47,13 @@ The server needs PHP `ZipArchive`. It does not need shell access or a `git` bina
 - Public page: profile, slider, links, projects, language switch, light and dark theme.
 - Admin: dashboard, content, settings, and password. The admin can be added to the home screen from `/admin/`.
 - One visit is counted per browser per day. Link, slide, and project clicks are counted whenever they happen.
+
+## License
+
+MRKLinkhub is free and open source under the [MIT License](LICENSE).
+
+## Donate
+
+USDT, BEP20 on BSC:
+
+`0xAec9F6Ad80940a50e35F453d3354CA8379d0CFaD`
