@@ -15,6 +15,54 @@
     document.querySelectorAll('[data-fa][data-en]').forEach(el => {
       el.setAttribute('aria-label', l === 'fa' ? el.getAttribute('data-fa') : el.getAttribute('data-en'));
     });
+    paintNote();
+  }
+  function waitPhrase(sec, lang) {
+    sec = Math.max(1, +sec || 1);
+    let n, faWord, enOne, enMany;
+    if (sec < 3600) {
+      n = Math.ceil(sec / 60); faWord = 'دقیقه'; enOne = 'minute'; enMany = 'minutes';
+    } else if (sec < 86400) {
+      n = Math.ceil(sec / 3600); faWord = 'ساعت'; enOne = 'hour'; enMany = 'hours';
+    } else if (sec < 7 * 86400) {
+      n = Math.ceil(sec / 86400); faWord = 'روز'; enOne = 'day'; enMany = 'days';
+    } else {
+      n = Math.ceil(sec / (7 * 86400)); faWord = 'هفته'; enOne = 'week'; enMany = 'weeks';
+    }
+    const shown = lang === 'fa' ? String(n).replace(/\d/g, ch => '۰۱۲۳۴۵۶۷۸۹'[ch]) : String(n);
+    if (lang === 'fa') return 'تلاش زیاد بود. ' + shown + ' ' + faWord + ' دیگر امتحان کنید.';
+    return 'Too many attempts. Try again in ' + shown + ' ' + (n === 1 ? enOne : enMany) + '.';
+  }
+  let lockTimer = 0;
+  function paintNote() {
+    const el = document.getElementById('lock');
+    if (!el) return;
+    if (el.dataset.until) {
+      const left = Math.ceil((+el.dataset.until - Date.now()) / 1000);
+      if (left <= 0) {
+        el.hidden = true;
+        el.textContent = '';
+        delete el.dataset.until;
+        const btn = document.querySelector('#gate [type=submit]');
+        if (btn) btn.disabled = false;
+        if (lockTimer) { clearInterval(lockTimer); lockTimer = 0; }
+        return;
+      }
+      el.hidden = false;
+      el.textContent = waitPhrase(left, d.lang);
+      return;
+    }
+    const kind = el.dataset.note || '';
+    if (!kind) return;
+    const fa = d.lang === 'fa';
+    const map = {
+      session: fa ? 'نشست تمام شد. صفحه را دوباره باز کنید.' : 'Session expired. Reload the page.',
+      name: fa ? 'نام را درست بنویسید.' : 'Enter a valid name.',
+      off: fa ? 'حمایت خاموش است.' : 'Donate is turned off.',
+      fail: fa ? 'درخواست انجام نشد.' : 'Request failed.'
+    };
+    el.hidden = false;
+    el.textContent = map[kind] || map.fail;
   }
   function paintTheme(t) {
     d.dataset.theme = t;
@@ -59,18 +107,116 @@
       const text = this.getAttribute('data-copy') === 'addr' ? (this.getAttribute('data-text') || '') : siteUrl();
       if (text) copyText(this, text);
     });
+    const iconOk = /^fa-(solid|brands) fa-[a-z0-9-]+$/;
+    const paintWallets = rows => {
+      const list = document.getElementById('wallet-list');
+      const empty = document.getElementById('wallet-empty');
+      if (!list) return;
+      list.replaceChildren();
+      if (!rows.length) {
+        if (empty) empty.hidden = false;
+        return;
+      }
+      if (empty) empty.hidden = true;
+      rows.forEach(row => {
+        const art = document.createElement('article');
+        art.className = 'acc glass';
+        const head = document.createElement('button');
+        head.type = 'button';
+        head.className = 'acc-h';
+        head.setAttribute('aria-expanded', 'false');
+        const ic = document.createElement('i');
+        ic.className = iconOk.test(row.icon || '') ? row.icon : 'fa-solid fa-coins';
+        const title = document.createElement('span');
+        const faT = document.createElement('span');
+        faT.setAttribute('data-l', 'fa');
+        faT.textContent = row.title_fa || row.title_en || '';
+        const enT = document.createElement('span');
+        enT.setAttribute('data-l', 'en');
+        enT.textContent = row.title_en || row.title_fa || '';
+        title.append(faT, enT);
+        const chev = document.createElement('i');
+        chev.className = 'fa-solid fa-chevron-down chev';
+        head.append(ic, title, chev);
+        const body = document.createElement('div');
+        body.className = 'acc-b';
+        body.hidden = true;
+        const addr = document.createElement('p');
+        addr.className = 'addr';
+        addr.dir = 'ltr';
+        addr.textContent = row.address || '';
+        const qr = document.createElement('div');
+        qr.className = 'qr';
+        qr.setAttribute('data-qr', row.address || '');
+        const copy = document.createElement('button');
+        copy.type = 'button';
+        copy.className = 'btn pri text-btn';
+        copy.setAttribute('data-copy', 'addr');
+        copy.setAttribute('data-icon', 'fa-solid fa-copy');
+        copy.setAttribute('data-text', row.address || '');
+        const ci = document.createElement('i');
+        ci.className = 'fa-solid fa-copy';
+        const cfa = document.createElement('span');
+        cfa.setAttribute('data-l', 'fa');
+        cfa.textContent = 'کپی آدرس';
+        const cen = document.createElement('span');
+        cen.setAttribute('data-l', 'en');
+        cen.textContent = 'Copy address';
+        copy.append(ci, cfa, cen);
+        body.append(addr, qr, copy);
+        art.append(head, body);
+        list.append(art);
+      });
+    };
+    let gateBusy = false;
     $('#gate').on('submit', function (e) {
       e.preventDefault();
-      const input = this.querySelector('[name=who]');
-      const name = String(input.value || '').trim();
+      if (gateBusy) return;
+      const form = this;
+      const input = form.querySelector('[name=who]');
+      const name = String(input.value || '').replace(/\s+/g, ' ').trim();
       if (!name) {
         input.value = '';
         input.reportValidity();
         return;
       }
-      $('#who-name').text(name);
-      this.hidden = true;
-      $('#wallets').prop('hidden', false);
+      const btn = form.querySelector('[type=submit]');
+      const lock = document.getElementById('lock');
+      gateBusy = true;
+      if (btn) btn.disabled = true;
+      $.ajax({
+        url: 'donate.php',
+        method: 'POST',
+        dataType: 'json',
+        data: { who: name },
+        headers: { 'X-CSRF': form.getAttribute('data-csrf') || '' }
+      }).done(r => {
+        $('#who-name').text(name);
+        paintWallets((r && r.rows) || []);
+        form.hidden = true;
+        $('#wallets').prop('hidden', false);
+      }).fail(x => {
+        const body = x.responseJSON || {};
+        if (lock) {
+          delete lock.dataset.note;
+          delete lock.dataset.until;
+          if (x.status === 429 && body.wait) {
+            lock.dataset.until = String(Date.now() + (+body.wait * 1000));
+            if (!lockTimer) lockTimer = setInterval(paintNote, 30000);
+          } else if (x.status === 403 && body.error === 'Session expired. Reload the page.') {
+            lock.dataset.note = 'session';
+          } else if (x.status === 403) {
+            lock.dataset.note = 'off';
+          } else if (x.status === 400) {
+            lock.dataset.note = 'name';
+          } else {
+            lock.dataset.note = 'fail';
+          }
+          paintNote();
+        }
+        gateBusy = false;
+        if (btn && !(lock && lock.dataset.until)) btn.disabled = false;
+      });
     });
     $(document).on('click', '.acc-h', function () {
       const item = this.parentNode;

@@ -29,24 +29,24 @@ $db = db();
 $a = $_POST['action'] ?? '';
 
 if ($a === 'login') {
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-    $db->prepare('DELETE FROM attempts WHERE t < ?')->execute([time() - 900]);
-    $n = $db->prepare('SELECT COUNT(*) FROM attempts WHERE ip = ?');
-    $n->execute([$ip]);
-    if ((int) $n->fetchColumn() >= 5) {
-        out(['error' => 'Too many attempts. Try again in 15 minutes.'], 429);
+    $wait = lock_wait('login');
+    if ($wait > 0) {
+        out(['error' => 'Too many attempts', 'wait' => $wait], 429);
     }
     $u = $db->prepare('SELECT id, pass FROM admins WHERE username = ?');
     $u->execute([(string) ($_POST['user'] ?? '')]);
     $row = $u->fetch();
     if (!$row || !password_verify((string) ($_POST['pass'] ?? ''), $row['pass'])) {
-        $db->prepare('INSERT INTO attempts (ip, t) VALUES (?, ?)')->execute([$ip, time()]);
+        $wait = lock_fail('login');
+        if ($wait > 0) {
+            out(['error' => 'Too many attempts', 'wait' => $wait], 429);
+        }
         out(['error' => 'Wrong username or password'], 401);
     }
+    lock_clear('login');
     session_regenerate_id(true);
     $_SESSION['uid'] = (int) $row['id'];
     $_SESSION['csrf'] = bin2hex(random_bytes(16));
-    $db->prepare('DELETE FROM attempts WHERE ip = ?')->execute([$ip]);
     out(['ok' => 1]);
 }
 

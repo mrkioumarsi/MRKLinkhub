@@ -25,7 +25,6 @@ $(function () {
   const errs = {
     'Wrong username or password': 'نام کاربری یا رمز نادرست است',
     'Session expired. Reload the page.': 'نشست تمام شد. صفحه را دوباره باز کنید.',
-    'Too many attempts. Try again in 15 minutes.': 'تلاش‌ها زیاد شد. ۱۵ دقیقه بعد دوباره امتحان کنید.',
     'Not authorized': 'اجازه دسترسی نیست',
     'Current password is wrong': 'رمز فعلی نادرست است',
     'New password needs at least 10 characters': 'رمز جدید باید حداقل ۱۰ نویسه باشد',
@@ -48,9 +47,27 @@ $(function () {
     'Address is required': 'آدرس را بنویسید',
     'Address is too long': 'آدرس خیلی بلند است'
   };
+  function waitPhrase(sec) {
+    sec = Math.max(1, +sec || 1);
+    let n, faWord, enOne, enMany;
+    if (sec < 3600) {
+      n = Math.ceil(sec / 60); faWord = 'دقیقه'; enOne = 'minute'; enMany = 'minutes';
+    } else if (sec < 86400) {
+      n = Math.ceil(sec / 3600); faWord = 'ساعت'; enOne = 'hour'; enMany = 'hours';
+    } else if (sec < 7 * 86400) {
+      n = Math.ceil(sec / 86400); faWord = 'روز'; enOne = 'day'; enMany = 'days';
+    } else {
+      n = Math.ceil(sec / (7 * 86400)); faWord = 'هفته'; enOne = 'week'; enMany = 'weeks';
+    }
+    const shown = fa ? String(n).replace(/\d/g, ch => '۰۱۲۳۴۵۶۷۸۹'[ch]) : String(n);
+    if (fa) return 'تلاش زیاد بود. ' + shown + ' ' + faWord + ' دیگر امتحان کنید.';
+    return 'Too many attempts. Try again in ' + shown + ' ' + (n === 1 ? enOne : enMany) + '.';
+  }
   const say = x => {
-    const raw = (x.responseJSON || {}).error;
+    const body = x.responseJSON || {};
+    const raw = body.error;
     if (!raw) return (fa ? 'درخواست انجام نشد' : 'Request failed') + ' (' + x.status + ')';
+    if (raw === 'Too many attempts') return waitPhrase(body.wait);
     if (!fa) return raw;
     if (errs[raw]) return errs[raw];
     const m = /^(.*) must start with https:\/\/, mailto: or tel:$/.exec(raw);
@@ -77,6 +94,8 @@ $(function () {
     dash: 'پیشخوان', visits: 'بازدید', range: '۳۰ روز گذشته',
     today: 'امروز', week: 'هفته گذشته', month: 'ماه گذشته',
     menu: 'منو', close: 'بستن', clicks: 'آمار کلیک', noHits: 'هنوز لینکی نیست',
+    donors: 'آمار حمایت', went: 'رفته صفحه دونیت', noDonors: 'هنوز کسی به صفحه حمایت نرفته',
+    kindLink: 'لینک', kindSlide: 'اسلاید', kindProject: 'پروژه',
     gIntro: 'تنظیمات معرفی', gLang: 'تنظیمات زبان', gPwa: 'تنظیمات برنامه و PWA',
     gDonate: 'حمایت', gHelp: 'دکمه راهنما',
     gUpdate: 'آپدیت از گیت‌هاب', currentVer: 'نسخه فعلی', latestVer: 'آخرین نسخه',
@@ -97,6 +116,8 @@ $(function () {
     dash: 'Dashboard', visits: 'Visits', range: 'Last 30 days',
     today: 'Today', week: 'Past week', month: 'Past month',
     menu: 'Menu', close: 'Close', clicks: 'Clicks', noHits: 'No links yet',
+    donors: 'Donate', went: 'went to the donate page', noDonors: 'Nobody has opened the donate page yet',
+    kindLink: 'Link', kindSlide: 'Slide', kindProject: 'Project',
     gIntro: 'Profile', gLang: 'Language', gPwa: 'App and PWA',
     gDonate: 'Donate', gHelp: 'Help button',
     gUpdate: 'Update from GitHub', currentVer: 'Current', latestVer: 'Latest',
@@ -393,13 +414,16 @@ $(function () {
     const $stats = $('<div class="stats">').append(box('today'), box('week'), box('month'));
     const $hits = $('<div class="hit-list">');
     const $hitSum = $('<span>');
+    const $dons = $('<div class="hit-list">');
+    const kindWord = k => k === 'slide' ? T.kindSlide : (k === 'project' ? T.kindProject : T.kindLink);
     $main.append(
       $('<div class="glass chart">').append(
         $('<div class="chart-head">').append($('<b>').text(T.visits), $('<span>').text(T.range)),
         $plot, $range
       ),
       $stats,
-      $('<div class="glass hits">').append($('<div class="chart-head">').append($('<b>').text(T.clicks), $hitSum), $hits)
+      $('<div class="glass hits">').append($('<div class="chart-head">').append($('<b>').text(T.clicks), $hitSum), $hits),
+      $('<div class="glass hits">').append($('<div class="chart-head">').append($('<b>').text(T.donors)), $dons)
     );
     const paint = r => {
       const days = r.days || [];
@@ -412,25 +436,51 @@ $(function () {
       const rows = r.clicks || [];
       const total = rows.reduce((s, row) => s + (+row.n || 0), 0);
       $hitSum.text(rows.length ? num(total) : '');
-      const names = rows.map(row => row.t || T.untitled);
+      const keys = rows.map(row => (row.k || 'link') + '\n' + (row.t || T.untitled));
       const $have = $hits.children('.hit');
-      const same = $have.length === rows.length && names.every((t, i) => $have.eq(i).find('.hit-name').text() === t);
-      if (!rows.length) { $hits.empty().append($('<p class="muted hit-empty">').text(T.noHits)); return; }
-      if (!same) {
-        $hits.empty();
-        rows.forEach(() => $hits.append($('<div class="hit">').append(
-          $('<div class="hit-top">').append($('<span class="hit-name">'), $('<b class="hit-n">')),
-          $('<div class="hit-bar">').append($('<i>'))
+      const same = $have.length === rows.length && keys.every((t, i) => $have.eq(i).attr('data-k') === t);
+      if (!rows.length) {
+        $hits.empty().append($('<p class="muted hit-empty">').text(T.noHits));
+      } else {
+        if (!same) {
+          $hits.empty();
+          rows.forEach((row, i) => $hits.append($('<div class="hit">').attr('data-k', keys[i]).append(
+            $('<div class="hit-top">').append(
+              $('<div class="hit-id">').append(
+                $('<span class="hit-kind">').text(kindWord(row.k)),
+                $('<span class="hit-name">').text(row.t || T.untitled)
+              ),
+              $('<b class="hit-n">')
+            ),
+            $('<div class="hit-bar">').append($('<i>'))
+          )));
+        }
+        const max = Math.max(1, ...rows.map(row => +row.n || 0));
+        rows.forEach((row, i) => {
+          const n = +row.n || 0;
+          const $h = $hits.children('.hit').eq(i);
+          $h.find('.hit-n').text(num(n));
+          $h.find('.hit-bar i').css('width', Math.round(n / max * 100) + '%');
+        });
+      }
+      const donors = r.donors || [];
+      const dkeys = donors.map(row => String(row.n || '') + '\n' + (+row.c || 0));
+      const $haveD = $dons.children('.hit');
+      const sameD = $haveD.length === donors.length && dkeys.every((t, i) => $haveD.eq(i).attr('data-k') === t);
+      if (!donors.length) {
+        $dons.empty().append($('<p class="muted hit-empty">').text(T.noDonors));
+      } else if (!sameD) {
+        $dons.empty();
+        donors.forEach((row, i) => $dons.append($('<div class="hit">').attr('data-k', dkeys[i]).append(
+          $('<div class="hit-top">').append(
+            $('<div class="hit-id">').append(
+              $('<span class="hit-name">').text(row.n || ''),
+              $('<span class="hit-note">').text(T.went)
+            ),
+            $('<b class="hit-n">').text(num(+row.c || 0))
+          )
         )));
       }
-      const max = Math.max(1, ...rows.map(row => +row.n || 0));
-      rows.forEach((row, i) => {
-        const n = +row.n || 0;
-        const $h = $hits.children('.hit').eq(i);
-        $h.find('.hit-name').text(names[i]);
-        $h.find('.hit-n').text(num(n));
-        $h.find('.hit-bar i').css('width', Math.round(n / max * 100) + '%');
-      });
     };
     const pull = () => api({ action: 'stats', lang: fa ? 'fa' : 'en' }, { quiet: true }).done(paint);
     pull();

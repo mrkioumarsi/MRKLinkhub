@@ -66,6 +66,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             'settings (k VARCHAR(40) PRIMARY KEY, v TEXT)',
             'admins (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(30) NOT NULL UNIQUE, pass VARCHAR(255) NOT NULL)',
             'attempts (ip VARCHAR(45) NOT NULL, t INT NOT NULL, KEY (ip))',
+            'locks (scope VARCHAR(16) NOT NULL, ip VARCHAR(45) NOT NULL, strikes INT UNSIGNED NOT NULL DEFAULT 0, tries INT UNSIGNED NOT NULL DEFAULT 0, seen INT UNSIGNED NOT NULL DEFAULT 0, until INT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (scope, ip))',
+            'donors (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(80) NOT NULL, t INT UNSIGNED NOT NULL, KEY (t))',
             "slides ($pk, $base, $image)",
             "links ($pk, icon VARCHAR(60) NOT NULL DEFAULT '', $base)",
             "projects ($pk, $base, desc_fa TEXT, desc_en TEXT, $image)",

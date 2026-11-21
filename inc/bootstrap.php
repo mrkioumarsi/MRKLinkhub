@@ -177,6 +177,143 @@ function track_visit(): void
     }
 }
 
+function lock_span(int $strike): int
+{
+    if ($strike <= 1) {
+        return 3600;
+    }
+    if ($strike === 2) {
+        return 12 * 3600;
+    }
+    if ($strike === 3) {
+        return 24 * 3600;
+    }
+    $shift = min(2, max(0, $strike - 4));
+    return (7 * 86400) << $shift;
+}
+
+function locks_ready(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    db()->exec("CREATE TABLE IF NOT EXISTS locks (
+        scope VARCHAR(16) NOT NULL,
+        ip VARCHAR(45) NOT NULL,
+        strikes INT UNSIGNED NOT NULL DEFAULT 0,
+        tries INT UNSIGNED NOT NULL DEFAULT 0,
+        seen INT UNSIGNED NOT NULL DEFAULT 0,
+        until INT UNSIGNED NOT NULL DEFAULT 0,
+        PRIMARY KEY (scope, ip)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $done = true;
+}
+
+function client_ip(): string
+{
+    $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+    return strlen($ip) > 45 ? substr($ip, 0, 45) : $ip;
+}
+
+function lock_wait(string $scope): int
+{
+    locks_ready();
+    $st = db()->prepare('SELECT until FROM locks WHERE scope = ? AND ip = ?');
+    $st->execute([$scope, client_ip()]);
+    $wait = (int) $st->fetchColumn() - time();
+    return $wait > 0 ? $wait : 0;
+}
+
+function lock_fail(string $scope): int
+{
+    locks_ready();
+    $ip = client_ip();
+    $db = db();
+    $db->beginTransaction();
+    try {
+        $db->prepare('INSERT IGNORE INTO locks (scope, ip, strikes, tries, seen, until) VALUES (?, ?, 0, 0, 0, 0)')->execute([$scope, $ip]);
+        $st = $db->prepare('SELECT strikes, tries, seen, until FROM locks WHERE scope = ? AND ip = ? FOR UPDATE');
+        $st->execute([$scope, $ip]);
+        $row = $st->fetch() ?: ['strikes' => 0, 'tries' => 0, 'seen' => 0, 'until' => 0];
+        $now = time();
+        $until = (int) $row['until'];
+        if ($until > $now) {
+            $db->commit();
+            return $until - $now;
+        }
+        $tries = (int) $row['tries'];
+        if ($now - (int) $row['seen'] > 86400) {
+            $tries = 0;
+        }
+        $tries++;
+        $strikes = (int) $row['strikes'];
+        $wait = 0;
+        if ($tries >= 5) {
+            $strikes++;
+            $tries = 0;
+            $wait = lock_span($strikes);
+            $until = $now + $wait;
+        } else {
+            $until = 0;
+        }
+        $db->prepare('UPDATE locks SET strikes = ?, tries = ?, seen = ?, until = ? WHERE scope = ? AND ip = ?')
+            ->execute([$strikes, $tries, $now, $until, $scope, $ip]);
+        $db->commit();
+        return $wait;
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        throw $e;
+    }
+}
+
+function lock_clear(string $scope): void
+{
+    try {
+        locks_ready();
+        db()->prepare('DELETE FROM locks WHERE scope = ? AND ip = ?')->execute([$scope, client_ip()]);
+    } catch (Throwable $e) {
+    }
+}
+
+function donors_ready(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    db()->exec("CREATE TABLE IF NOT EXISTS donors (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(80) NOT NULL,
+        t INT UNSIGNED NOT NULL,
+        KEY (t)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $done = true;
+}
+
+function donor_add(string $name): void
+{
+    donors_ready();
+    db()->prepare('INSERT INTO donors (name, t) VALUES (?, ?)')->execute([$name, time()]);
+}
+
+function donor_list(): array
+{
+    try {
+        donors_ready();
+        $rows = db()->query('SELECT name, COUNT(*) n, MAX(t) last_t FROM donors GROUP BY name ORDER BY last_t DESC LIMIT 40')->fetchAll();
+        $out = [];
+        foreach ($rows as $r) {
+            $out[] = ['n' => (string) $r['name'], 'c' => (int) $r['n']];
+        }
+        return $out;
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
 function visit_stats(string $lang = 'fa'): array
 {
     visits_ready();
@@ -201,7 +338,7 @@ function visit_stats(string $lang = 'fa'): array
             $today = $n;
         }
     }
-    return ['days' => $days, 'today' => $today, 'week' => $week, 'month' => $month, 'clicks' => click_list($lang)];
+    return ['days' => $days, 'today' => $today, 'week' => $week, 'month' => $month, 'clicks' => click_list($lang), 'donors' => donor_list()];
 }
 
 function track_click(string $kind, int $id): void
@@ -245,7 +382,8 @@ function click_list(string $lang): array
                 $faT = trim((string) $r['title_fa']);
                 $enT = trim((string) $r['title_en']);
                 $title = $en ? ($enT !== '' ? $enT : $faT) : ($faT !== '' ? $faT : $enT);
-                $out[] = ['t' => $title !== '' ? $title : ('#' . $r['id']), 'n' => $map[$kind . ':' . $r['id']] ?? 0];
+                $key = ['slides' => 'slide', 'links' => 'link', 'projects' => 'project'][$kind] ?? 'link';
+                $out[] = ['t' => $title !== '' ? $title : ('#' . $r['id']), 'n' => $map[$kind . ':' . $r['id']] ?? 0, 'k' => $key];
             }
         };
         $add('slides', " AND url <> ''");

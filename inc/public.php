@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 const MRK_CSS = '12';
-const MRK_JS = '10';
+const MRK_JS = '11';
 
 function public_bundle(bool $queryLang = false): array
 {

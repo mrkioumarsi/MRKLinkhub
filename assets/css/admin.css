@@ -481,6 +481,33 @@ textarea[dir=ltr] {
     gap: 10px
 }
 
+.hit-id {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0
+}
+
+.hit-kind {
+    flex: none;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--ac);
+    background: rgba(108, 92, 231, .12);
+    border: 1px solid rgba(108, 92, 231, .28)
+}
+
+.hit-note {
+    flex: none;
+    color: var(--mut);
+    font-size: .8rem;
+    font-weight: 600;
+    white-space: nowrap
+}
+
 .hit-name {
     min-width: 0;
     overflow: hidden;
@@ -580,9 +607,11 @@ textarea[dir=ltr] {
         width: 54px;
         height: 54px;
         padding: 0;
-        border: 1px solid var(--bd);
+        border: 2px solid transparent;
         border-radius: 18px;
-        background: var(--card);
+        background:
+            linear-gradient(var(--card), var(--card)) padding-box,
+            linear-gradient(135deg, var(--ac), var(--ac2)) border-box;
         color: var(--tx);
         box-shadow: var(--sh);
         flex-direction: column;
