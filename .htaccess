@@ -1,0 +1,10 @@
+Options -Indexes
+<FilesMatch "^\.ht">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^\.mrk-update(/|$) - [F,L]
+  RewriteRule ^\.mrk-sessions(/|$) - [F,L]
+</IfModule>

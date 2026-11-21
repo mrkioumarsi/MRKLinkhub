@@ -1,0 +1,6 @@
+inc/config.php
+uploads/*
+!uploads/.htaccess
+!uploads/.gitkeep
+.mrk-sessions/
+.mrk-update/
