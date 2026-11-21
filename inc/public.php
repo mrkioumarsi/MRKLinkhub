@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-const MRK_CSS = '12';
-const MRK_JS = '11';
+const MRK_CSS = '13';
+const MRK_JS = '12';
 
 function public_bundle(bool $queryLang = false): array
 {

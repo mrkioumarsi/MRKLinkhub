@@ -47,7 +47,6 @@ $pageTitle = $showFa && $showEn
 <body>
 <main class="wrap">
   <header class="me glass">
-    <button class="copy" id="copy" type="button" data-copy="page" data-icon="fa-solid fa-link" data-fa="کپی لینک" data-en="Copy link" aria-label="<?= $lang === 'fa' ? 'کپی لینک' : 'Copy link' ?>"><i class="fa-solid fa-link"></i></button>
 <?php if (!empty($s['avatar'])): ?>
     <img class="av" src="<?= e($img($s['avatar'])) ?>" alt="">
 <?php else: ?>

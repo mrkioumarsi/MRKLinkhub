@@ -191,7 +191,6 @@
         data: { who: name },
         headers: { 'X-CSRF': form.getAttribute('data-csrf') || '' }
       }).done(r => {
-        $('#who-name').text(name);
         paintWallets((r && r.rows) || []);
         form.hidden = true;
         $('#wallets').prop('hidden', false);
@@ -242,7 +241,18 @@
         const q = qrcode(0, 'M');
         q.addData(text);
         q.make();
-        box.innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+        const cell = 4, margin = 2, n = q.getModuleCount();
+        const size = n * cell + margin * 2;
+        let marks = '';
+        for (let row = 0; row < n; row++) {
+          for (let col = 0; col < n; col++) {
+            if (!q.isDark(row, col)) continue;
+            const x = (col * cell + margin - 0.4).toFixed(2);
+            const y = (row * cell + margin - 0.4).toFixed(2);
+            marks += '<rect x="' + x + '" y="' + y + '" width="4.8" height="4.8" rx="1.15" fill="#000"/>';
+          }
+        }
+        box.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" role="img"><rect width="100%" height="100%" fill="#fff"/>' + marks + '</svg>';
         box.dataset.done = '1';
       } catch (err) {}
     });

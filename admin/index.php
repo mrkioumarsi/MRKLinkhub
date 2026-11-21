@@ -60,7 +60,7 @@ $cfg = ['csrf' => $_SESSION['csrf'], 'langs' => $langs, 'lang' => $ui, 'donate' 
 <link rel="stylesheet" href="../assets/css/app.css?v=8">
 <link rel="stylesheet" href="../assets/css/admin.css?v=14">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="../assets/js/admin.js?v=14" defer></script>
+<script src="../assets/js/admin.js?v=15" defer></script>
 </head>
 <body data-cfg="<?= e(json_encode($cfg)) ?>">
 <?php if (!$in): ?>

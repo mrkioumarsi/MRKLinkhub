@@ -115,7 +115,6 @@ $force = $b['forced'] !== '' ? ' data-langforce="' . e($b['forced']) . '"' : '';
   </form>
   <section id="wallets" hidden>
     <h1><span data-l="fa">حمایت</span><span data-l="en">Donate</span></h1>
-    <p class="who"><span data-l="fa">از طرف </span><span data-l="en">From </span><b id="who-name"></b></p>
     <div id="wallet-list" class="accs"></div>
     <p id="wallet-empty" class="glass pad muted" hidden><span data-l="fa">هنوز آدرسی ثبت نشده.</span><span data-l="en">No addresses yet.</span></p>
   </section>

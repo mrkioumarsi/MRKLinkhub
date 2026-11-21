@@ -37,7 +37,7 @@ return [
         'theme_color' => ['PWA theme color', 'color'],
         'icon' => ['PWA icon (square, 512px or larger)', 'image'],
         'donate_on' => ['Donate enabled', 'check'],
-        'show_help' => ['Show question button', 'check'],
+        'show_help' => ['Show creator link', 'check'],
     ]],
     'slides' => ['label' => 'Slider', 'icon' => 'fa-images', 'fields' => $title + ['image' => ['Image', 'image']] + $tail],
     'links' => ['label' => 'Links', 'icon' => 'fa-link', 'fields' => ['icon' => ['Icon', 'select', $icons]] + $title + $tail],

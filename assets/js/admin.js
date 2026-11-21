@@ -97,7 +97,7 @@ $(function () {
     donors: 'آمار حمایت', went: 'رفته صفحه دونیت', noDonors: 'هنوز کسی به صفحه حمایت نرفته',
     kindLink: 'لینک', kindSlide: 'اسلاید', kindProject: 'پروژه',
     gIntro: 'تنظیمات معرفی', gLang: 'تنظیمات زبان', gPwa: 'تنظیمات برنامه و PWA',
-    gDonate: 'حمایت', gHelp: 'دکمه راهنما',
+    gDonate: 'حمایت', gHelp: 'لینک سازنده',
     gUpdate: 'آپدیت از گیت‌هاب', currentVer: 'نسخه فعلی', latestVer: 'آخرین نسخه',
     updateNow: 'بروزرسانی', updating: 'در حال بروزرسانی…', updated: 'بروزرسانی شد',
     reinstall: 'نصب مجدد نسخه فعلی', reinstalling: 'در حال نصب مجدد…', reinstalled: 'نسخه فعلی دوباره نصب شد',
@@ -119,7 +119,7 @@ $(function () {
     donors: 'Donate', went: 'went to the donate page', noDonors: 'Nobody has opened the donate page yet',
     kindLink: 'Link', kindSlide: 'Slide', kindProject: 'Project',
     gIntro: 'Profile', gLang: 'Language', gPwa: 'App and PWA',
-    gDonate: 'Donate', gHelp: 'Help button',
+    gDonate: 'Donate', gHelp: 'Creator link',
     gUpdate: 'Update from GitHub', currentVer: 'Current', latestVer: 'Latest',
     updateNow: 'Update', updating: 'Updating…', updated: 'Updated',
     reinstall: 'Reinstall current version', reinstalling: 'Reinstalling…', reinstalled: 'Current version reinstalled',
@@ -147,7 +147,7 @@ $(function () {
     'PWA name': 'نام برنامه', 'PWA short name': 'نام کوتاه برنامه',
     'PWA theme color': 'رنگ برنامه', 'PWA icon (square, 512px or larger)': 'آیکون برنامه (مربع، حداقل ۵۱۲)',
     'Image': 'تصویر', 'Icon': 'آیکون', 'Address': 'آدرس',
-    'Donate enabled': 'فعال‌سازی حمایت', 'Show question button': 'نمایش دکمه علامت سؤال',
+    'Donate enabled': 'فعال‌سازی حمایت', 'Show creator link': 'نمایش لینک سازنده',
     'Description (Persian)': 'توضیح (فارسی)', 'Description (English)': 'توضیح (انگلیسی)'
   };
   const lab = s => (fa && labels[s]) ? labels[s] : s;
