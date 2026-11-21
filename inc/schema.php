@@ -1,9 +1,18 @@
 <?php
 // Single source of truth for admin forms AND the column whitelist used by the API.
 $icons = [
+    'fa-solid fa-link',
     'fa-brands fa-linkedin', 'fa-brands fa-github', 'fa-brands fa-instagram', 'fa-brands fa-telegram',
     'fa-brands fa-x-twitter', 'fa-brands fa-youtube', 'fa-brands fa-whatsapp', 'fa-brands fa-facebook',
     'fa-brands fa-tiktok', 'fa-brands fa-discord', 'fa-solid fa-envelope', 'fa-solid fa-globe',
+    'fa-solid fa-store', 'fa-solid fa-cart-shopping', 'fa-solid fa-bag-shopping', 'fa-solid fa-basket-shopping',
+    'fa-solid fa-credit-card', 'fa-solid fa-wallet', 'fa-solid fa-money-bill-wave', 'fa-solid fa-coins',
+    'fa-solid fa-receipt', 'fa-solid fa-tag', 'fa-solid fa-percent', 'fa-solid fa-gift',
+    'fa-solid fa-truck', 'fa-solid fa-box', 'fa-solid fa-qrcode', 'fa-solid fa-building-columns',
+    'fa-solid fa-hand-holding-dollar',
+    'fa-brands fa-paypal', 'fa-brands fa-stripe', 'fa-brands fa-cc-visa', 'fa-brands fa-cc-mastercard',
+    'fa-brands fa-apple-pay', 'fa-brands fa-google-pay', 'fa-brands fa-amazon', 'fa-brands fa-shopify',
+    'fa-brands fa-bitcoin',
 ];
 $title = ['title_fa' => ['Title (Persian)', 'text'], 'title_en' => ['Title (English)', 'text']];
 $tail = ['url' => ['URL', 'url'], 'sort' => ['Order (small first)', 'number'], 'active' => ['Visible', 'check']];

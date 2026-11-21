@@ -25,6 +25,30 @@
     setLang(d.lang);
     $('#lang').on('click', () => setLang(d.lang === 'fa' ? 'en' : 'fa'));
     $('#theme').on('click', () => setTheme(d.dataset.theme === 'dark' ? 'light' : 'dark'));
+    let copied;
+    $('#copy').on('click', function () {
+      const btn = this;
+      const url = location.origin + location.pathname.replace(/\/index\.php$/, '/');
+      const done = () => {
+        const icon = btn.querySelector('i');
+        icon.className = 'fa-solid fa-check';
+        clearTimeout(copied);
+        copied = setTimeout(() => { icon.className = 'fa-solid fa-link'; }, 1400);
+      };
+      const fallback = () => {
+        const box = document.createElement('textarea');
+        box.value = url;
+        box.setAttribute('readonly', '');
+        box.style.position = 'fixed';
+        box.style.left = '-999px';
+        document.body.appendChild(box);
+        box.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        box.remove();
+      };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(done).catch(fallback);
+      else fallback();
+    });
 
     $('.slider').each(function () {
       const $s = $(this), $t = $s.find('.track'), n = $t.children().length;

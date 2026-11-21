@@ -60,13 +60,14 @@ $pageTitle = $showFa && $showEn
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Vazirmatn:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="assets/js/boot.js"></script>
-<link rel="stylesheet" href="assets/css/app.css?v=10">
+<link rel="stylesheet" href="assets/css/app.css?v=11">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="assets/js/app.js?v=8"></script>
+<script src="assets/js/app.js?v=9"></script>
 </head>
 <body>
 <main class="wrap">
   <header class="me glass">
+    <button class="copy" id="copy" type="button" aria-label="<?= $lang === 'fa' ? 'کپی لینک' : 'Copy link' ?>"><i class="fa-solid fa-link"></i></button>
 <?php if (!empty($s['avatar'])): ?>
     <img class="av" src="<?= e($img($s['avatar'])) ?>" alt="">
 <?php else: ?>
