@@ -78,6 +78,7 @@ $(function () {
     gIntro: 'تنظیمات معرفی', gLang: 'تنظیمات زبان', gPwa: 'تنظیمات برنامه و PWA',
     gUpdate: 'آپدیت از گیت‌هاب', currentVer: 'نسخه فعلی', latestVer: 'آخرین نسخه',
     updateNow: 'بروزرسانی', updating: 'در حال بروزرسانی…', updated: 'بروزرسانی شد',
+    reinstall: 'نصب مجدد نسخه فعلی', reinstalling: 'در حال نصب مجدد…', reinstalled: 'نسخه فعلی دوباره نصب شد',
     upToDate: 'به‌روز است', updateFail: 'نسخه گیت‌هاب خوانده نشد',
     keepData: 'تنظیمات پایگاه داده و پوشه آپلود عوض نمی‌شود',
     add: 'افزودن', save: 'ذخیره', cancel: 'انصراف', saved: 'ذخیره شد',
@@ -96,6 +97,7 @@ $(function () {
     gIntro: 'Profile', gLang: 'Language', gPwa: 'App and PWA',
     gUpdate: 'Update from GitHub', currentVer: 'Current', latestVer: 'Latest',
     updateNow: 'Update', updating: 'Updating…', updated: 'Updated',
+    reinstall: 'Reinstall current version', reinstalling: 'Reinstalling…', reinstalled: 'Current version reinstalled',
     upToDate: 'Up to date', updateFail: 'Could not read the GitHub release',
     keepData: 'Database settings and the uploads folder are left untouched',
     add: 'Add new', save: 'Save', cancel: 'Cancel', saved: 'Saved',
@@ -297,24 +299,31 @@ $(function () {
   function updateCard() {
     const $note = $('<p class="muted">');
     const $btn = $('<button class="btn pri" type="button">').text(T.updateNow);
+    const $again = $('<button class="btn" type="button">').text(T.reinstall);
     const paint = r => {
       $note.text(T.currentVer + ' ' + (r.current || '—') + ' · ' + T.latestVer + ' ' + (r.latest || '—'));
       $btn.text(r.update ? T.updateNow : T.upToDate);
     };
-    api({ action: 'update', op: 'check' }, { quiet: true }).done(paint).fail(() => $note.text(T.updateFail));
-    $btn.on('click', () => {
-      $btn.prop('disabled', true).text(T.updating);
-      api({ action: 'update', op: 'apply' }).done(r => {
+    const run = (op, $b, busy, doneText) => {
+      $btn.add($again).prop('disabled', true);
+      $b.text(busy);
+      api({ action: 'update', op: op }).done(r => {
         paint(r);
-        toast(r.updated ? T.updated : T.upToDate);
+        toast(r.updated ? doneText : T.upToDate);
         if (r.updated) setTimeout(() => location.reload(), 800);
-      }).always(() => $btn.prop('disabled', false));
-    });
+      }).always(() => {
+        $btn.add($again).prop('disabled', false);
+        $again.text(T.reinstall);
+      });
+    };
+    api({ action: 'update', op: 'check' }, { quiet: true }).done(paint).fail(() => $note.text(T.updateFail));
+    $btn.on('click', () => run('apply', $btn, T.updating, T.updated));
+    $again.on('click', () => run('reinstall', $again, T.reinstalling, T.reinstalled));
     return $('<form class="glass pad part">').on('submit', e => e.preventDefault()).append(
       $('<h2 class="pw-title">').text(T.gUpdate),
       $note,
       $('<p class="muted">').text(T.keepData),
-      $('<div class="btns">').append($btn)
+      $('<div class="btns">').append($btn, $again)
     );
   }
 

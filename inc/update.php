@@ -227,7 +227,47 @@ function mrk_unpack(string $zipPath, string $unpack): void
     $zip->close();
 }
 
-function apply_update(): array
+function mrk_install_tree(string $unpack): void
+{
+    $copy = function (string $from, string $rel) use (&$copy): void {
+        if (mrk_skip($rel) || ($rel === '.htaccess' && is_file(ROOT . '/.htaccess'))) {
+            return;
+        }
+        $dest = ROOT . '/' . $rel;
+        if (is_dir($from)) {
+            if (!is_dir($dest) && !mkdir($dest, 0755, true)) {
+                throw new RuntimeException('Could not write the update');
+            }
+            foreach (scandir($from) ?: [] as $item) {
+                if ($item === '.' || $item === '..') {
+                    continue;
+                }
+                $copy($from . '/' . $item, $rel === '' ? $item : $rel . '/' . $item);
+            }
+            return;
+        }
+        $parent = dirname($dest);
+        if (!is_dir($parent) && !mkdir($parent, 0755, true)) {
+            throw new RuntimeException('Could not write the update');
+        }
+        if (!copy($from, $dest)) {
+            throw new RuntimeException('Could not write the update');
+        }
+    };
+    foreach (scandir($unpack) ?: [] as $item) {
+        if ($item === '.' || $item === '..') {
+            continue;
+        }
+        $copy($unpack . '/' . $item, $item);
+    }
+}
+
+function mrk_needs_install(string $latest, string $current, bool $force): bool
+{
+    return $force || version_compare($latest, $current, '>');
+}
+
+function apply_update(bool $force = false): array
 {
     if (!class_exists('ZipArchive')) {
         throw new RuntimeException('Zip support is missing on this server');
@@ -235,7 +275,7 @@ function apply_update(): array
     @set_time_limit(180);
     $release = mrk_release();
     $current = mrk_version();
-    if (!version_compare($release['tag'], $current, '>')) {
+    if (!mrk_needs_install($release['tag'], $current, $force)) {
         return mrk_status($current, $release['tag'], false);
     }
 
@@ -252,38 +292,7 @@ function apply_update(): array
             throw new RuntimeException('Could not download the release');
         }
         mrk_unpack($zipPath, $unpack);
-
-        $copy = function (string $from, string $rel) use (&$copy): void {
-            if (mrk_skip($rel) || ($rel === '.htaccess' && is_file(ROOT . '/.htaccess'))) {
-                return;
-            }
-            $dest = ROOT . '/' . $rel;
-            if (is_dir($from)) {
-                if (!is_dir($dest) && !mkdir($dest, 0755, true)) {
-                    throw new RuntimeException('Could not write the update');
-                }
-                foreach (scandir($from) ?: [] as $item) {
-                    if ($item === '.' || $item === '..') {
-                        continue;
-                    }
-                    $copy($from . '/' . $item, $rel === '' ? $item : $rel . '/' . $item);
-                }
-                return;
-            }
-            $parent = dirname($dest);
-            if (!is_dir($parent) && !mkdir($parent, 0755, true)) {
-                throw new RuntimeException('Could not write the update');
-            }
-            if (!copy($from, $dest)) {
-                throw new RuntimeException('Could not write the update');
-            }
-        };
-        foreach (scandir($unpack) ?: [] as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-            $copy($unpack . '/' . $item, $item);
-        }
+        mrk_install_tree($unpack);
         return mrk_status($current, $release['tag'], true);
     } finally {
         mrk_rm($work);

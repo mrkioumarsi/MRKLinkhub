@@ -74,8 +74,15 @@ if ($a === 'logout') {
 
 if ($a === 'update') {
     require ROOT . '/inc/update.php';
+    $op = (string) ($_POST['op'] ?? 'check');
     try {
-        out((($_POST['op'] ?? '') === 'apply') ? apply_update() : check_update());
+        if ($op === 'check') {
+            out(check_update());
+        }
+        if ($op === 'apply' || $op === 'reinstall') {
+            out(apply_update($op === 'reinstall'));
+        }
+        out(['error' => 'Bad request'], 400);
     } catch (Throwable $e) {
         out(['error' => $e->getMessage()], 500);
     }

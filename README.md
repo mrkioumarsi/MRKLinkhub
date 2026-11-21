@@ -17,7 +17,7 @@ Bilingual link page (Persian and English) with an admin panel, visit and click s
 
 ## Update from the admin panel
 
-Sign in, open **Settings**, and use **Update from GitHub**. The panel reads the latest release of `mrkioumarsi/MRKLinkhub`, downloads the zip over HTTPS, and replaces the site files.
+Sign in, open **Settings**, and use **Update from GitHub**. The panel reads the latest release of `mrkioumarsi/MRKLinkhub`, downloads the zip over HTTPS, and replaces the site files. **Reinstall current version** installs that same release again when the site is already on the latest version.
 
 The update keeps these in place:
 
