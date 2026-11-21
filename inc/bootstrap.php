@@ -59,46 +59,53 @@ function session_dir(): string
     return '';
 }
 
-if (defined('ADMIN')) {
-    $secure = request_is_https();
-    $life = 60 * 60 * 24 * 30;
-    $save = session_dir();
-    if ($save !== '') {
-        ini_set('session.save_path', $save);
+function mrk_session(): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        $secure = request_is_https();
+        $life = 60 * 60 * 24 * 30;
+        $save = session_dir();
+        if ($save !== '') {
+            ini_set('session.save_path', $save);
+        }
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_secure', $secure ? '1' : '0');
+        ini_set('session.cookie_samesite', 'Lax');
+        ini_set('session.cookie_lifetime', (string) $life);
+        ini_set('session.cookie_path', '/');
+        ini_set('session.gc_maxlifetime', (string) $life);
+        session_name('lbsid');
+        session_set_cookie_params([
+            'lifetime' => $life,
+            'path' => '/',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+        session_start();
+        setcookie(session_name(), session_id(), [
+            'expires' => time() + $life,
+            'path' => '/',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
     }
-    ini_set('session.use_strict_mode', '1');
-    ini_set('session.use_only_cookies', '1');
-    ini_set('session.cookie_httponly', '1');
-    ini_set('session.cookie_secure', $secure ? '1' : '0');
-    ini_set('session.cookie_samesite', 'Lax');
-    ini_set('session.cookie_lifetime', (string) $life);
-    ini_set('session.cookie_path', '/');
-    ini_set('session.gc_maxlifetime', (string) $life);
-    session_name('lbsid');
-    session_set_cookie_params([
-        'lifetime' => $life,
-        'path' => '/',
-        'secure' => $secure,
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-    session_start();
+    $_SESSION['csrf'] ??= bin2hex(random_bytes(16));
+}
+
+if (defined('ADMIN')) {
+    mrk_session();
     $dead = gmdate('D, d M Y H:i:s', time() - 42000) . ' GMT';
-    $secureFlag = $secure ? '; secure' : '';
+    $secureFlag = request_is_https() ? '; secure' : '';
     foreach (['/admin', '/admin/'] as $path) {
         header(
             'Set-Cookie: lbsid=deleted; expires=' . $dead . '; Max-Age=0; path=' . $path . $secureFlag . '; HttpOnly; SameSite=Lax',
             false
         );
     }
-    setcookie(session_name(), session_id(), [
-        'expires' => time() + $life,
-        'path' => '/',
-        'secure' => $secure,
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-    $_SESSION['csrf'] ??= bin2hex(random_bytes(16));
 }
 
 function db(): PDO

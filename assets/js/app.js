@@ -188,7 +188,7 @@
         url: 'donate.php',
         method: 'POST',
         dataType: 'json',
-        data: { who: name },
+        data: { who: name, csrf: form.getAttribute('data-csrf') || '' },
         headers: { 'X-CSRF': form.getAttribute('data-csrf') || '' }
       }).done(r => {
         paintWallets((r && r.rows) || []);

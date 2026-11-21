@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 const MRK_CSS = '13';
-const MRK_JS = '12';
+const MRK_JS = '13';
 
 function public_bundle(bool $queryLang = false): array
 {
@@ -62,10 +62,10 @@ function public_bar(array $b, bool $back): void
     };
     echo '<div class="bar">';
     echo '<button class="btn" id="theme" type="button"' . $aria('حالت شب و روز', 'Theme') . '><i class="fa-solid fa-circle-half-stroke"></i></button>';
-    echo '<button class="btn" id="copy-site" type="button" data-copy="page" data-icon="fa-solid fa-link"' . $aria('کپی لینک', 'Copy link') . '><i class="fa-solid fa-link"></i></button>';
     if (!empty($b['donateOn'])) {
         echo '<a class="btn" id="donate" href="donate.php"' . $aria('حمایت', 'Donate') . '><i class="fa-solid fa-circle-dollar-to-slot"></i></a>';
     }
+    echo '<button class="btn" id="copy-site" type="button" data-copy="page" data-icon="fa-solid fa-link"' . $aria('کپی لینک', 'Copy link') . '><i class="fa-solid fa-link"></i></button>';
     if (count($b['enabled']) > 1) {
         echo '<button class="btn" id="lang" type="button" aria-label="' . e($fa ? 'زبان' : 'Language') . '"></button>';
     }

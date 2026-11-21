@@ -3,6 +3,7 @@ declare(strict_types=1);
 const UP = '';
 require __DIR__ . '/inc/bootstrap.php';
 require __DIR__ . '/inc/public.php';
+mrk_session();
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
@@ -14,6 +15,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     try {
         $csrf = (string) ($_SESSION['csrf'] ?? '');
         $got = (string) ($_SERVER['HTTP_X_CSRF'] ?? '');
+        if ($got === '') {
+            $got = (string) ($_POST['csrf'] ?? '');
+        }
         if ($csrf === '' || !hash_equals($csrf, $got)) {
             $send(['error' => 'Session expired. Reload the page.'], 403);
         }
