@@ -14,6 +14,11 @@ $icons = [
     'fa-brands fa-apple-pay', 'fa-brands fa-google-pay', 'fa-brands fa-amazon', 'fa-brands fa-shopify',
     'fa-brands fa-bitcoin',
 ];
+$coins = [
+    'fa-brands fa-bitcoin', 'fa-brands fa-ethereum', 'fa-brands fa-monero', 'fa-brands fa-viacoin',
+    'fa-solid fa-coins', 'fa-solid fa-wallet', 'fa-solid fa-dollar-sign', 'fa-solid fa-gem',
+    'fa-solid fa-cube', 'fa-solid fa-bolt', 'fa-solid fa-shield-halved', 'fa-solid fa-circle',
+];
 $title = ['title_fa' => ['Title (Persian)', 'text'], 'title_en' => ['Title (English)', 'text']];
 $tail = ['url' => ['URL', 'url'], 'sort' => ['Order (small first)', 'number'], 'active' => ['Visible', 'check']];
 
@@ -31,6 +36,8 @@ return [
         'short_name' => ['PWA short name', 'text'],
         'theme_color' => ['PWA theme color', 'color'],
         'icon' => ['PWA icon (square, 512px or larger)', 'image'],
+        'donate_on' => ['Donate enabled', 'check'],
+        'show_help' => ['Show question button', 'check'],
     ]],
     'slides' => ['label' => 'Slider', 'icon' => 'fa-images', 'fields' => $title + ['image' => ['Image', 'image']] + $tail],
     'links' => ['label' => 'Links', 'icon' => 'fa-link', 'fields' => ['icon' => ['Icon', 'select', $icons]] + $title + $tail],
@@ -39,4 +46,11 @@ return [
         'desc_en' => ['Description (English)', 'textarea'],
         'image' => ['Image', 'image'],
     ] + $tail],
+    'donates' => ['label' => 'Donate', 'icon' => 'fa-circle-dollar-to-slot', 'fields' => [
+        'icon' => ['Icon', 'select', $coins],
+    ] + $title + [
+        'address' => ['Address', 'addr'],
+        'sort' => ['Order (small first)', 'number'],
+        'active' => ['Visible', 'check'],
+    ]],
 ];

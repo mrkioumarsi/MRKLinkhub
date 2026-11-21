@@ -44,7 +44,9 @@ $(function () {
     'GitHub did not return a release': 'نسخه‌ای در گیت‌هاب پیدا نشد',
     'Could not open the release archive': 'فایل نسخه باز نشد',
     'The release archive is not safe': 'فایل نسخه امن نیست',
-    'Could not write the update': 'نوشتن بروزرسانی روی هاست انجام نشد'
+    'Could not write the update': 'نوشتن بروزرسانی روی هاست انجام نشد',
+    'Address is required': 'آدرس را بنویسید',
+    'Address is too long': 'آدرس خیلی بلند است'
   };
   const say = x => {
     const raw = (x.responseJSON || {}).error;
@@ -76,6 +78,7 @@ $(function () {
     today: 'امروز', week: 'هفته گذشته', month: 'ماه گذشته',
     menu: 'منو', close: 'بستن', clicks: 'آمار کلیک', noHits: 'هنوز لینکی نیست',
     gIntro: 'تنظیمات معرفی', gLang: 'تنظیمات زبان', gPwa: 'تنظیمات برنامه و PWA',
+    gDonate: 'حمایت', gHelp: 'دکمه راهنما',
     gUpdate: 'آپدیت از گیت‌هاب', currentVer: 'نسخه فعلی', latestVer: 'آخرین نسخه',
     updateNow: 'بروزرسانی', updating: 'در حال بروزرسانی…', updated: 'بروزرسانی شد',
     reinstall: 'نصب مجدد نسخه فعلی', reinstalling: 'در حال نصب مجدد…', reinstalled: 'نسخه فعلی دوباره نصب شد',
@@ -95,6 +98,7 @@ $(function () {
     today: 'Today', week: 'Past week', month: 'Past month',
     menu: 'Menu', close: 'Close', clicks: 'Clicks', noHits: 'No links yet',
     gIntro: 'Profile', gLang: 'Language', gPwa: 'App and PWA',
+    gDonate: 'Donate', gHelp: 'Help button',
     gUpdate: 'Update from GitHub', currentVer: 'Current', latestVer: 'Latest',
     updateNow: 'Update', updating: 'Updating…', updated: 'Updated',
     reinstall: 'Reinstall current version', reinstalling: 'Reinstalling…', reinstalled: 'Current version reinstalled',
@@ -111,7 +115,7 @@ $(function () {
     fail: 'Request failed'
   };
   const labels = {
-    'Settings': 'تنظیمات', 'Slider': 'اسلایدر', 'Links': 'لینک‌ها', 'Projects': 'پروژه‌ها',
+    'Settings': 'تنظیمات', 'Slider': 'اسلایدر', 'Links': 'لینک‌ها', 'Projects': 'پروژه‌ها', 'Donate': 'حمایت',
     'Title (Persian)': 'عنوان (فارسی)', 'Title (English)': 'عنوان (انگلیسی)',
     'URL': 'نشانی', 'Order (small first)': 'ترتیب (عدد کوچک‌تر بالاتر)', 'Visible': 'نمایان',
     'Name (Persian)': 'نام (فارسی)', 'Name (English)': 'نام (انگلیسی)',
@@ -121,7 +125,8 @@ $(function () {
     'Persian': 'فارسی', 'English': 'انگلیسی',
     'PWA name': 'نام برنامه', 'PWA short name': 'نام کوتاه برنامه',
     'PWA theme color': 'رنگ برنامه', 'PWA icon (square, 512px or larger)': 'آیکون برنامه (مربع، حداقل ۵۱۲)',
-    'Image': 'تصویر', 'Icon': 'آیکون',
+    'Image': 'تصویر', 'Icon': 'آیکون', 'Address': 'آدرس',
+    'Donate enabled': 'فعال‌سازی حمایت', 'Show question button': 'نمایش دکمه علامت سؤال',
     'Description (Persian)': 'توضیح (فارسی)', 'Description (English)': 'توضیح (انگلیسی)'
   };
   const lab = s => (fa && labels[s]) ? labels[s] : s;
@@ -206,12 +211,14 @@ $(function () {
   function field(k, def, val) {
     const type = def[1], opts = def[2];
     if (type === 'check') {
+      const on = k === 'donate_on' ? String(val) === '1' : (val == null || +val === 1);
       return $('<label class="sw wide">').append(
-        $('<input type="checkbox">').attr('name', k).prop('checked', val == null || +val === 1), $('<i>'), $('<span>').text(lab(def[0])));
+        $('<input type="checkbox">').attr('name', k).prop('checked', on), $('<i>'), $('<span>').text(lab(def[0])));
     }
     if (type === 'image') return uploader(k, def[0], val);
     let $i;
     if (type === 'textarea') $i = $('<textarea rows="3">');
+    else if (type === 'addr') $i = $('<input>').attr({ type: 'text', dir: 'ltr', lang: 'en', spellcheck: 'false', autocomplete: 'off' });
     else if (type === 'select') {
       let list = opts || [];
       if (k === 'default_lang') list = list.filter(o => langs.indexOf(o) >= 0);
@@ -224,10 +231,10 @@ $(function () {
     }
     else $i = $('<input>').attr('type', type);
     $i.attr('name', k).val(val != null ? val : (type === 'color' ? '#6c5ce7' : type === 'number' ? 0 : ''));
-    if (type === 'url' || type === 'number' || type === 'color') $i.attr({ dir: 'ltr', lang: 'en' });
+    if (type === 'url' || type === 'number' || type === 'color' || type === 'addr') $i.attr({ dir: 'ltr', lang: 'en' });
     else if (/_fa$/.test(k)) $i.attr({ dir: 'rtl', lang: 'fa' });
     else if (/_en$/.test(k)) $i.attr({ dir: 'ltr', lang: 'en' });
-    return $('<label class="f">').toggleClass('wide', type === 'textarea').append($('<span>').text(lab(def[0])), $i);
+    return $('<label class="f">').toggleClass('wide', type === 'textarea' || type === 'addr').append($('<span>').text(lab(def[0])), $i);
   }
 
   function form(ent, row, done, cancel) {
@@ -261,7 +268,9 @@ $(function () {
     const groups = [
       ['intro', T.gIntro, ['name_fa', 'name_en', 'bio_fa', 'bio_en', 'avatar']],
       ['lang', T.gLang, ['default_lang', 'show_fa', 'show_en']],
-      ['pwa', T.gPwa, ['app_name', 'short_name', 'theme_color', 'icon']]
+      ['pwa', T.gPwa, ['app_name', 'short_name', 'theme_color', 'icon']],
+      ['donate', T.gDonate, ['donate_on']],
+      ['help', T.gHelp, ['show_help']]
     ];
     return groups.map(([id, title, keys]) => {
       const $g = $('<div class="grid">');
@@ -290,7 +299,7 @@ $(function () {
         e.preventDefault();
         api($(this).serialize() + '&action=save&entity=settings&part=' + id).done(() => {
           toast(T.saved);
-          if (id === 'lang') location.reload();
+          if (id === 'lang' || id === 'donate') location.reload();
         });
       });
     });
@@ -458,7 +467,7 @@ $(function () {
           ib('fa-trash del', T.del, () => { if (confirm(T.confirmDel)) api({ action: 'delete', entity: ent, id: row.id }).done(() => { toast(T.deleted); show(ent); }); })
         );
         $main.append($('<div class="row glass">').append(
-          $('<div class="meta">').append($('<b>').text(row.title_en || row.title_fa || T.untitled), $('<small>').text(row.title_fa && row.title_en ? row.title_fa : (row.url || ''))),
+          $('<div class="meta">').append($('<b>').text(row.title_en || row.title_fa || T.untitled), $('<small>').text(row.address || (row.title_fa && row.title_en ? row.title_fa : (row.url || '')))),
           $th,
           $acts
         ));
@@ -467,7 +476,7 @@ $(function () {
   }
 
   $('<button class="btn" type="button">').append($('<i class="fa-solid fa-chart-line">'), $('<span>').text(T.dash)).data('k', '_dash').appendTo('#nav');
-  Object.keys(S).filter(k => k !== 'settings').concat(S.settings ? ['settings'] : []).forEach(k => {
+  Object.keys(S).filter(k => k !== 'settings' && (k !== 'donates' || cfg.donate)).concat(S.settings ? ['settings'] : []).forEach(k => {
     const v = S[k];
     $('<button class="btn" type="button">').append($('<i>').addClass('fa-solid ' + v.icon), $('<span>').text(lab(v.label))).data('k', k).appendTo('#nav');
   });

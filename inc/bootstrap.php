@@ -125,6 +125,24 @@ function e($s): string
     return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 }
 
+function donates_ready(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    db()->exec("CREATE TABLE IF NOT EXISTS donates (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        icon VARCHAR(60) NOT NULL DEFAULT '',
+        title_fa VARCHAR(190) NOT NULL DEFAULT '',
+        title_en VARCHAR(190) NOT NULL DEFAULT '',
+        address VARCHAR(500) NOT NULL DEFAULT '',
+        sort INT NOT NULL DEFAULT 0,
+        active TINYINT(1) NOT NULL DEFAULT 1
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $done = true;
+}
+
 function visits_ready(): void
 {
     static $done = false;

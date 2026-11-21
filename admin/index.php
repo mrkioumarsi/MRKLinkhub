@@ -37,7 +37,7 @@ if ($brand === '') {
     $brand = $faUi ? 'پیشخوان' : 'Dashboard';
 }
 $in = !empty($_SESSION['uid']);
-$cfg = ['csrf' => $_SESSION['csrf'], 'langs' => $langs, 'lang' => $ui] + ($in ? ['schema' => require ROOT . '/inc/schema.php'] : []);
+$cfg = ['csrf' => $_SESSION['csrf'], 'langs' => $langs, 'lang' => $ui, 'donate' => (($sv['donate_on'] ?? '0') === '1')] + ($in ? ['schema' => require ROOT . '/inc/schema.php'] : []);
 ?>
 <!doctype html>
 <html lang="<?= $ui ?>" dir="<?= $faUi ? 'rtl' : 'ltr' ?>">
@@ -60,7 +60,7 @@ $cfg = ['csrf' => $_SESSION['csrf'], 'langs' => $langs, 'lang' => $ui] + ($in ? 
 <link rel="stylesheet" href="../assets/css/app.css?v=8">
 <link rel="stylesheet" href="../assets/css/admin.css?v=13">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="../assets/js/admin.js?v=12" defer></script>
+<script src="../assets/js/admin.js?v=13" defer></script>
 </head>
 <body data-cfg="<?= e(json_encode($cfg)) ?>">
 <?php if (!$in): ?>

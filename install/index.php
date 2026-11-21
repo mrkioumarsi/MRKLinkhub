@@ -69,6 +69,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             "slides ($pk, $base, $image)",
             "links ($pk, icon VARCHAR(60) NOT NULL DEFAULT '', $base)",
             "projects ($pk, $base, desc_fa TEXT, desc_en TEXT, $image)",
+            "donates ($pk, icon VARCHAR(60) NOT NULL DEFAULT '', title_fa VARCHAR(190) NOT NULL DEFAULT '', title_en VARCHAR(190) NOT NULL DEFAULT '', address VARCHAR(500) NOT NULL DEFAULT '', sort INT NOT NULL DEFAULT 0, active TINYINT(1) NOT NULL DEFAULT 1)",
         ];
         foreach ($tables as $table) {
             $pdo->exec('CREATE TABLE IF NOT EXISTS ' . $table . ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
@@ -87,6 +88,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             'default_lang' => 'fa',
             'show_fa' => '1',
             'show_en' => '1',
+            'show_help' => '1',
+            'donate_on' => '0',
             'app_name' => 'My Links',
             'short_name' => 'Links',
             'theme_color' => '#6c5ce7',

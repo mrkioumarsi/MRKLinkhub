@@ -84,7 +84,7 @@ a {
 }
 
 body:has(.bar) .wrap {
-    padding-bottom: 92px
+    padding-bottom: 120px
 }
 
 .glass {
@@ -107,7 +107,9 @@ body:has(.bar) .wrap {
     bottom: 12px;
     transform: translateX(-50%);
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    max-width: calc(100vw - 24px);
     gap: 6px;
     margin: 0;
     padding: 5px;
@@ -362,6 +364,129 @@ h2 {
     .tiles {
         grid-template-columns: 1fr
     }
+}
+
+[dir=rtl] #back i {
+    transform: scaleX(-1)
+}
+
+.text-btn {
+    width: auto;
+    min-width: 0;
+    padding: 0 16px;
+    gap: 8px
+}
+
+.donate-gate,
+.accs {
+    display: grid;
+    gap: 12px
+}
+
+.donate-gate[hidden],
+#wallets[hidden],
+.acc-b[hidden] {
+    display: none
+}
+
+.ask {
+    display: grid;
+    gap: 6px;
+    font-weight: 600
+}
+
+.ask input,
+.addr {
+    width: 100%;
+    font: inherit;
+    color: inherit;
+    padding: 11px 13px;
+    border-radius: 12px;
+    border: 1px solid var(--bd);
+    background: var(--ff)
+}
+
+.ask input:focus {
+    outline: 2px solid var(--ac);
+    outline-offset: 1px
+}
+
+html:not([data-theme=dark]) .ask input,
+html:not([data-theme=dark]) .addr {
+    border-color: rgba(27, 26, 46, .16)
+}
+
+.who {
+    margin: 0 0 14px;
+    font-weight: 600
+}
+
+.acc {
+    overflow: hidden
+}
+
+.acc-h {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 15px 16px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-align: start;
+    cursor: pointer
+}
+
+.acc-h > i:first-child {
+    width: 28px;
+    text-align: center;
+    color: var(--ac);
+    font-size: 1.2rem
+}
+
+.chev {
+    margin-inline-start: auto;
+    transition: transform .2s
+}
+
+.acc.open .chev {
+    transform: rotate(180deg)
+}
+
+.acc-b {
+    display: grid;
+    gap: 12px;
+    padding: 0 16px 16px
+}
+
+.addr {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .92rem;
+    word-break: break-all;
+    direction: ltr;
+    text-align: left
+}
+
+.qr {
+    display: flex;
+    justify-content: center
+}
+
+.qr svg {
+    width: 180px;
+    height: auto;
+    padding: 8px;
+    border-radius: 12px;
+    background: #fff
+}
+
+.acc .text-btn,
+.donate-gate .text-btn {
+    width: 100%
 }
 
 @media(prefers-reduced-motion:reduce) {

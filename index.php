@@ -2,40 +2,20 @@
 declare(strict_types=1);
 const UP = '';
 require __DIR__ . '/inc/bootstrap.php';
+require __DIR__ . '/inc/public.php';
 track_visit();
 
-$s = db()->query('SELECT k, v FROM settings')->fetchAll(PDO::FETCH_KEY_PAIR);
+$b = public_bundle(false);
+$s = $b['s'];
+$showFa = $b['showFa'];
+$showEn = $b['showEn'];
+$enabled = $b['enabled'];
+$lang = $b['lang'];
+$L = $b['L'];
 $get = fn(string $t): array => db()->query("SELECT * FROM `$t` WHERE active = 1 ORDER BY sort, id")->fetchAll();
 $slides = array_filter($get('slides'), fn($x) => $x['image'] !== '');
 $links = $get('links');
 $projects = $get('projects');
-
-$showFa = ($s['show_fa'] ?? '1') !== '0';
-$showEn = ($s['show_en'] ?? '1') !== '0';
-if (!$showFa && !$showEn) {
-    $showFa = true;
-}
-$enabled = [];
-if ($showFa) {
-    $enabled[] = 'fa';
-}
-if ($showEn) {
-    $enabled[] = 'en';
-}
-$pref = ($s['default_lang'] ?? 'fa') === 'en' ? 'en' : 'fa';
-$lang = in_array($pref, $enabled, true) ? $pref : $enabled[0];
-$L = function ($fa, $en) use ($showFa, $showEn) {
-    $fa = (string) $fa;
-    $en = (string) $en;
-    $html = '';
-    if ($showFa) {
-        $html .= '<span data-l="fa">' . e($fa !== '' ? $fa : $en) . '</span>';
-    }
-    if ($showEn) {
-        $html .= '<span data-l="en">' . e($en !== '' ? $en : $fa) . '</span>';
-    }
-    return $html;
-};
 $img = fn($f) => 'uploads/' . rawurlencode($f);
 $ext = fn($u) => str_starts_with($u, 'http') ? ' target="_blank" rel="noopener noreferrer"' : '';
 $color = $s['theme_color'] ?? '#6c5ce7';
@@ -60,14 +40,14 @@ $pageTitle = $showFa && $showEn
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Vazirmatn:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="assets/js/boot.js"></script>
-<link rel="stylesheet" href="assets/css/app.css?v=11">
+<link rel="stylesheet" href="assets/css/app.css?v=<?= MRK_CSS ?>">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="assets/js/app.js?v=9"></script>
+<script src="assets/js/app.js?v=<?= MRK_JS ?>"></script>
 </head>
 <body>
 <main class="wrap">
   <header class="me glass">
-    <button class="copy" id="copy" type="button" aria-label="<?= $lang === 'fa' ? 'کپی لینک' : 'Copy link' ?>"><i class="fa-solid fa-link"></i></button>
+    <button class="copy" id="copy" type="button" data-copy="page" data-icon="fa-solid fa-link" data-fa="کپی لینک" data-en="Copy link" aria-label="<?= $lang === 'fa' ? 'کپی لینک' : 'Copy link' ?>"><i class="fa-solid fa-link"></i></button>
 <?php if (!empty($s['avatar'])): ?>
     <img class="av" src="<?= e($img($s['avatar'])) ?>" alt="">
 <?php else: ?>
@@ -119,12 +99,6 @@ $pageTitle = $showFa && $showEn
   </section>
 <?php endif ?>
 </main>
-<div class="bar">
-  <button class="btn" id="theme" type="button" aria-label="Theme"><i class="fa-solid fa-circle-half-stroke"></i></button>
-<?php if (count($enabled) > 1): ?>
-  <button class="btn" id="lang" type="button" aria-label="Language"></button>
-<?php endif ?>
-  <a class="btn" id="help" href="https://mrkioumarsi.ir" target="_blank" rel="noopener noreferrer" aria-label="<?= $lang === 'fa' ? 'راهنما' : 'Help' ?>"><i class="fa-solid fa-question"></i></a>
-</div>
+<?php public_bar($b, false); ?>
 </body>
 </html>

@@ -148,6 +148,9 @@ $ent = (string) ($_POST['entity'] ?? '');
 if (!isset($S[$ent])) {
     out(['error' => 'Bad request'], 400);
 }
+if ($ent === 'donates') {
+    donates_ready();
+}
 
 if ($a === 'list') {
     if ($ent === 'settings') {
@@ -161,6 +164,8 @@ if ($a === 'save') {
         'intro' => ['name_fa', 'name_en', 'bio_fa', 'bio_en', 'avatar'],
         'lang' => ['default_lang', 'show_fa', 'show_en'],
         'pwa' => ['app_name', 'short_name', 'theme_color', 'icon'],
+        'donate' => ['donate_on'],
+        'help' => ['show_help'],
     ];
     $only = null;
     if ($ent === 'settings') {
@@ -185,6 +190,14 @@ if ($a === 'save') {
             $x = (int) $x;
         } elseif ($d[1] === 'url' && $x !== '' && !preg_match('~^(https?://|mailto:|tel:)~i', $x)) {
             out(['error' => "{$d[0]} must start with https://, mailto: or tel:"], 422);
+        } elseif ($d[1] === 'addr') {
+            $x = preg_replace('/\s+/', '', $x) ?? '';
+            if ($x === '') {
+                out(['error' => 'Address is required'], 422);
+            }
+            if (strlen($x) > 500) {
+                out(['error' => 'Address is too long'], 422);
+            }
         } elseif ($d[1] === 'select' && !in_array($x, $d[2], true)) {
             $x = $d[2][0];
         } elseif ($d[1] === 'image' && $x !== '' && !preg_match('/^[a-f0-9]{16}\.(jpg|png|webp)$/', $x)) {
