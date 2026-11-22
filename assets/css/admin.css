@@ -316,12 +316,20 @@ select:focus {
     margin-bottom: 14px
 }
 
+.sw span {
+    order: -1;
+    flex: 1;
+    min-width: 0
+}
+
 .sw input {
     position: absolute;
     opacity: 0
 }
 
 .sw i {
+    flex: none;
+    margin-inline-start: auto;
     width: 44px;
     height: 26px;
     border-radius: 26px;
