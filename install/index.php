@@ -71,6 +71,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             "slides ($pk, $base, $image)",
             "links ($pk, icon VARCHAR(60) NOT NULL DEFAULT '', $base)",
             "projects ($pk, $base, desc_fa TEXT, desc_en TEXT, $image)",
+            "jobs ($pk, title_fa VARCHAR(190) NOT NULL DEFAULT '', title_en VARCHAR(190) NOT NULL DEFAULT '', org_fa VARCHAR(190) NOT NULL DEFAULT '', org_en VARCHAR(190) NOT NULL DEFAULT '', when_fa VARCHAR(80) NOT NULL DEFAULT '', when_en VARCHAR(80) NOT NULL DEFAULT '', desc_fa TEXT, desc_en TEXT, sort INT NOT NULL DEFAULT 0, active TINYINT(1) NOT NULL DEFAULT 1)",
+            "edu ($pk, title_fa VARCHAR(190) NOT NULL DEFAULT '', title_en VARCHAR(190) NOT NULL DEFAULT '', org_fa VARCHAR(190) NOT NULL DEFAULT '', org_en VARCHAR(190) NOT NULL DEFAULT '', when_fa VARCHAR(80) NOT NULL DEFAULT '', when_en VARCHAR(80) NOT NULL DEFAULT '', desc_fa TEXT, desc_en TEXT, sort INT NOT NULL DEFAULT 0, active TINYINT(1) NOT NULL DEFAULT 1)",
+            "papers ($pk, title_fa VARCHAR(190) NOT NULL DEFAULT '', title_en VARCHAR(190) NOT NULL DEFAULT '', when_fa VARCHAR(80) NOT NULL DEFAULT '', when_en VARCHAR(80) NOT NULL DEFAULT '', desc_fa TEXT, desc_en TEXT, url VARCHAR(500) NOT NULL DEFAULT '', sort INT NOT NULL DEFAULT 0, active TINYINT(1) NOT NULL DEFAULT 1)",
             "donates ($pk, icon VARCHAR(60) NOT NULL DEFAULT '', title_fa VARCHAR(190) NOT NULL DEFAULT '', title_en VARCHAR(190) NOT NULL DEFAULT '', address VARCHAR(500) NOT NULL DEFAULT '', sort INT NOT NULL DEFAULT 0, active TINYINT(1) NOT NULL DEFAULT 1)",
         ];
         foreach ($tables as $table) {
@@ -94,6 +97,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             'donate_on' => '0',
             'donate_ask' => '1',
             'tz' => 'Asia/Tehran',
+            'section_order' => 'me,slides,links,jobs,projects,edu,papers',
             'app_name' => 'My Links',
             'short_name' => 'Links',
             'theme_color' => '#6c5ce7',

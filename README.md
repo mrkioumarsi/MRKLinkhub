@@ -44,7 +44,7 @@ The server needs PHP `ZipArchive`. It does not need shell access or a `git` bina
 
 ## What is included
 
-- Public page: profile, slider, links, projects, language switch, light and dark theme.
+- Public page: profile, slider, links, work, projects, education, papers, language switch, light and dark theme. Empty sections stay hidden. Section order and SEO text are set in the admin.
 - Admin: dashboard, content, settings, and password. The admin can be added to the home screen from `/admin/`.
 - One visit is counted per browser per day. Link, slide, and project clicks are counted whenever they happen.
 

@@ -20,7 +20,8 @@ $coins = [
     'fa-solid fa-cube', 'fa-solid fa-bolt', 'fa-solid fa-shield-halved', 'fa-solid fa-circle',
 ];
 $title = ['title_fa' => ['Title (Persian)', 'text'], 'title_en' => ['Title (English)', 'text']];
-$tail = ['url' => ['URL', 'url'], 'sort' => ['Order (small first)', 'number'], 'active' => ['Visible', 'check']];
+$on = ['sort' => ['Order (small first)', 'number'], 'active' => ['Visible', 'check']];
+$tail = ['url' => ['URL', 'url']] + $on;
 
 return [
     'settings' => ['label' => 'Settings', 'icon' => 'fa-gear', 'fields' => [
@@ -40,14 +41,42 @@ return [
         'donate_ask' => ['Ask for donor name', 'check'],
         'tz' => ['Timezone', 'select', timezone_identifiers_list()],
         'show_help' => ['Show creator link', 'check'],
+        'seo_title_fa' => ['SEO title (Persian)', 'text'],
+        'seo_title_en' => ['SEO title (English)', 'text'],
+        'seo_desc_fa' => ['Meta description (Persian)', 'textarea'],
+        'seo_desc_en' => ['Meta description (English)', 'textarea'],
+        'section_order' => ['Section order', 'text'],
     ]],
     'slides' => ['label' => 'Slider', 'icon' => 'fa-images', 'fields' => $title + ['image' => ['Image', 'image']] + $tail],
     'links' => ['label' => 'Links', 'icon' => 'fa-link', 'fields' => ['icon' => ['Icon', 'select', $icons]] + $title + $tail],
+    'jobs' => ['label' => 'Work', 'icon' => 'fa-briefcase', 'fields' => $title + [
+        'org_fa' => ['Company (Persian)', 'text'],
+        'org_en' => ['Company (English)', 'text'],
+        'when_fa' => ['Date (Persian)', 'text'],
+        'when_en' => ['Date (English)', 'text'],
+        'desc_fa' => ['Short description (Persian)', 'textarea'],
+        'desc_en' => ['Short description (English)', 'textarea'],
+    ] + $on],
     'projects' => ['label' => 'Projects', 'icon' => 'fa-diagram-project', 'fields' => $title + [
         'desc_fa' => ['Description (Persian)', 'textarea'],
         'desc_en' => ['Description (English)', 'textarea'],
         'image' => ['Image', 'image'],
     ] + $tail],
+    'edu' => ['label' => 'Education', 'icon' => 'fa-graduation-cap', 'fields' => $title + [
+        'org_fa' => ['School (Persian)', 'text'],
+        'org_en' => ['School (English)', 'text'],
+        'when_fa' => ['Date (Persian)', 'text'],
+        'when_en' => ['Date (English)', 'text'],
+        'desc_fa' => ['Short description (Persian)', 'textarea'],
+        'desc_en' => ['Short description (English)', 'textarea'],
+    ] + $on],
+    'papers' => ['label' => 'Papers', 'icon' => 'fa-book-open', 'fields' => $title + [
+        'when_fa' => ['Date (Persian)', 'text'],
+        'when_en' => ['Date (English)', 'text'],
+        'desc_fa' => ['Short description (Persian)', 'textarea'],
+        'desc_en' => ['Short description (English)', 'textarea'],
+        'url' => ['URL', 'url'],
+    ] + $on],
     'donates' => ['label' => 'Donate', 'icon' => 'fa-circle-dollar-to-slot', 'fields' => [
         'icon' => ['Icon', 'select', $coins],
     ] + $title + [

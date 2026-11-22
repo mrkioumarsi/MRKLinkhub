@@ -297,14 +297,21 @@ h1 {
     display: flex;
     align-items: center;
     gap: 14px;
+    min-width: 0;
     padding: 15px 18px;
     font-weight: 600;
     transition: transform .25s, border-color .25s
 }
 
+.lnk span {
+    min-width: 0;
+    overflow-wrap: anywhere
+}
+
 .lnk i {
     font-size: 1.35rem;
     width: 28px;
+    flex: none;
     text-align: center;
     color: var(--ac)
 }
@@ -319,6 +326,43 @@ h2 {
     font-size: 1.05rem;
     margin: 0 4px 12px;
     color: var(--mut)
+}
+
+.block {
+    margin-bottom: 28px
+}
+
+.cv {
+    display: grid;
+    gap: 10px
+}
+
+.cv-item {
+    display: block;
+    padding: 14px 16px;
+    color: inherit;
+    transition: transform .25s, border-color .25s
+}
+
+.cv-item h3 {
+    margin: 0 0 4px;
+    font-size: 1rem
+}
+
+.cv-meta,
+.cv-item p {
+    margin: 0;
+    color: var(--mut);
+    font-size: .88rem
+}
+
+.cv-meta {
+    margin-bottom: 6px
+}
+
+a.cv-item:hover {
+    transform: translateY(-3px);
+    border-color: var(--ac)
 }
 
 .tiles {
@@ -351,6 +395,24 @@ h2 {
 .tile p {
     font-size: .8rem;
     color: var(--mut)
+}
+
+@media(max-width:700px) {
+    .links {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px
+    }
+
+    .lnk {
+        padding: 12px 10px;
+        gap: 8px;
+        font-size: .9rem
+    }
+
+    .lnk i {
+        font-size: 1.05rem;
+        width: 20px
+    }
 }
 
 @media(max-width:380px) {

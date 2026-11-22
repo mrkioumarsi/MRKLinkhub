@@ -45,7 +45,8 @@ $(function () {
     'The release archive is not safe': 'فایل نسخه امن نیست',
     'Could not write the update': 'نوشتن بروزرسانی روی هاست انجام نشد',
     'Address is required': 'آدرس را بنویسید',
-    'Address is too long': 'آدرس خیلی بلند است'
+    'Address is too long': 'آدرس خیلی بلند است',
+    'Title is required': 'عنوان را بنویسید'
   };
   function waitPhrase(sec) {
     sec = Math.max(1, +sec || 1);
@@ -95,9 +96,9 @@ $(function () {
     today: 'امروز', week: 'هفته گذشته', month: 'ماه گذشته',
     menu: 'منو', close: 'بستن', clicks: 'آمار کلیک', noHits: 'هنوز لینکی نیست',
     donors: 'آمار حمایت', went: 'رفته صفحه دونیت', noDonors: 'هنوز کسی به صفحه حمایت نرفته',
-    kindLink: 'لینک', kindSlide: 'اسلاید', kindProject: 'پروژه',
+    kindLink: 'لینک', kindSlide: 'اسلاید', kindProject: 'پروژه', kindPaper: 'مقاله',
     gIntro: 'تنظیمات معرفی', gLang: 'تنظیمات زبان', gPwa: 'تنظیمات برنامه و PWA',
-    gDonate: 'حمایت', gTz: 'منطقه زمانی', gHelp: 'لینک سازنده',
+    gDonate: 'حمایت', gTz: 'منطقه زمانی', gHelp: 'لینک سازنده', gSeo: 'تنظیمات سئو', gOrder: 'ترتیب نمایش',
     gUpdate: 'آپدیت از گیت‌هاب', currentVer: 'نسخه فعلی', latestVer: 'آخرین نسخه',
     updateNow: 'بروزرسانی', updating: 'در حال بروزرسانی…', updated: 'بروزرسانی شد',
     reinstall: 'نصب مجدد نسخه فعلی', reinstalling: 'در حال نصب مجدد…', reinstalled: 'نسخه فعلی دوباره نصب شد',
@@ -117,9 +118,9 @@ $(function () {
     today: 'Today', week: 'Past week', month: 'Past month',
     menu: 'Menu', close: 'Close', clicks: 'Clicks', noHits: 'No links yet',
     donors: 'Donate', went: 'went to the donate page', noDonors: 'Nobody has opened the donate page yet',
-    kindLink: 'Link', kindSlide: 'Slide', kindProject: 'Project',
+    kindLink: 'Link', kindSlide: 'Slide', kindProject: 'Project', kindPaper: 'Paper',
     gIntro: 'Profile', gLang: 'Language', gPwa: 'App and PWA',
-    gDonate: 'Donate', gTz: 'Timezone', gHelp: 'Creator link',
+    gDonate: 'Donate', gTz: 'Timezone', gHelp: 'Creator link', gSeo: 'SEO', gOrder: 'Section order',
     gUpdate: 'Update from GitHub', currentVer: 'Current', latestVer: 'Latest',
     updateNow: 'Update', updating: 'Updating…', updated: 'Updated',
     reinstall: 'Reinstall current version', reinstalling: 'Reinstalling…', reinstalled: 'Current version reinstalled',
@@ -137,6 +138,7 @@ $(function () {
   };
   const labels = {
     'Settings': 'تنظیمات', 'Slider': 'اسلایدر', 'Links': 'لینک‌ها', 'Projects': 'پروژه‌ها', 'Donate': 'حمایت',
+    'Profile': 'معرفی', 'Work': 'سوابق شغلی', 'Education': 'سوابق تحصیلی', 'Papers': 'مقاله‌های علمی',
     'Title (Persian)': 'عنوان (فارسی)', 'Title (English)': 'عنوان (انگلیسی)',
     'URL': 'نشانی', 'Order (small first)': 'ترتیب (عدد کوچک‌تر بالاتر)', 'Visible': 'نمایان',
     'Name (Persian)': 'نام (فارسی)', 'Name (English)': 'نام (انگلیسی)',
@@ -149,7 +151,13 @@ $(function () {
     'Image': 'تصویر', 'Icon': 'آیکون', 'Address': 'آدرس',
     'Donate enabled': 'فعال‌سازی حمایت', 'Ask for donor name': 'درخواست نام حمایت کننده',
     'Timezone': 'منطقه زمانی', 'Show creator link': 'نمایش لینک سازنده',
-    'Description (Persian)': 'توضیح (فارسی)', 'Description (English)': 'توضیح (انگلیسی)'
+    'Description (Persian)': 'توضیح (فارسی)', 'Description (English)': 'توضیح (انگلیسی)',
+    'Short description (Persian)': 'توضیح کوتاه (فارسی)', 'Short description (English)': 'توضیح کوتاه (انگلیسی)',
+    'Company (Persian)': 'شرکت (فارسی)', 'Company (English)': 'شرکت (انگلیسی)',
+    'School (Persian)': 'محل تحصیل (فارسی)', 'School (English)': 'محل تحصیل (انگلیسی)',
+    'Date (Persian)': 'تاریخ (فارسی)', 'Date (English)': 'تاریخ (انگلیسی)',
+    'SEO title (Persian)': 'عنوان سئو (فارسی)', 'SEO title (English)': 'عنوان سئو (انگلیسی)',
+    'Meta description (Persian)': 'توضیح متا (فارسی)', 'Meta description (English)': 'توضیح متا (انگلیسی)'
   };
   const lab = s => (fa && labels[s]) ? labels[s] : s;
   const num = n => { try { return new Intl.NumberFormat(fa ? 'fa-IR' : 'en-US').format(n); } catch (e) { return String(n); } };
@@ -292,6 +300,7 @@ $(function () {
       ['intro', T.gIntro, ['name_fa', 'name_en', 'bio_fa', 'bio_en', 'avatar']],
       ['lang', T.gLang, ['default_lang', 'show_fa', 'show_en']],
       ['pwa', T.gPwa, ['app_name', 'short_name', 'theme_color', 'icon']],
+      ['seo', T.gSeo, ['seo_title_fa', 'seo_title_en', 'seo_desc_fa', 'seo_desc_en']],
       ['donate', T.gDonate, ['donate_on', 'donate_ask']],
       ['tz', T.gTz, ['tz']],
       ['help', T.gHelp, ['show_help']]
@@ -336,6 +345,38 @@ $(function () {
           if (id === 'lang' || id === 'donate') location.reload();
         });
       });
+    });
+  }
+
+  function orderCard(saved) {
+    const ids = ['me', 'slides', 'links', 'jobs', 'projects', 'edu', 'papers'];
+    const names = {
+      me: lab('Profile'), slides: lab('Slider'), links: lab('Links'), jobs: lab('Work'),
+      projects: lab('Projects'), edu: lab('Education'), papers: lab('Papers')
+    };
+    let order = String(saved || '').split(',').map(s => s.trim()).filter(id => ids.indexOf(id) >= 0);
+    ids.forEach(id => { if (order.indexOf(id) < 0) order.push(id); });
+    const $list = $('<div>');
+    const paint = () => {
+      $list.empty();
+      order.forEach((id, n) => {
+        $list.append($('<div class="row glass">').append(
+          $('<div class="meta">').append($('<b>').text(names[id] || id)),
+          $('<div class="acts">').append(
+            ib('fa-arrow-up', T.up, () => { if (!n) return; const t = order[n - 1]; order[n - 1] = order[n]; order[n] = t; paint(); }, n === 0),
+            ib('fa-arrow-down', T.down, () => { if (n >= order.length - 1) return; const t = order[n + 1]; order[n + 1] = order[n]; order[n] = t; paint(); }, n === order.length - 1)
+          )
+        ));
+      });
+    };
+    paint();
+    return $('<form class="glass pad part">').append(
+      $('<h2 class="pw-title">').text(T.gOrder),
+      $list,
+      $('<div class="btns">').append($('<button class="btn pri">').text(T.save))
+    ).on('submit', function (e) {
+      e.preventDefault();
+      api({ action: 'save', entity: 'settings', part: 'order', section_order: order.join(',') }).done(() => toast(T.saved));
     });
   }
 
@@ -429,7 +470,7 @@ $(function () {
     const $hitSum = $('<span>');
     const showDonors = !!(cfg.donate && cfg.donateAsk);
     const $dons = $('<div class="hit-list">');
-    const kindWord = k => k === 'slide' ? T.kindSlide : (k === 'project' ? T.kindProject : T.kindLink);
+    const kindWord = k => k === 'slide' ? T.kindSlide : (k === 'project' ? T.kindProject : (k === 'paper' ? T.kindPaper : T.kindLink));
     $main.append(
       $('<div class="glass chart">').append(
         $('<div class="chart-head">').append($('<b>').text(T.visits), $('<span>').text(T.range)),
@@ -513,7 +554,7 @@ $(function () {
     api({ action: 'list', entity: ent }).done(r => {
       if (ent === 'settings') {
         settingsPage(r.rows).forEach($f => $main.append($f));
-        $main.append(updateCard(), password());
+        $main.append(orderCard(r.rows.section_order), updateCard(), password());
         return;
       }
       const edit = row => {
@@ -525,7 +566,7 @@ $(function () {
       const move = (row, dir) => api({ action: 'move', entity: ent, id: row.id, dir: dir }).done(() => show(ent));
       r.rows.forEach((row, n) => {
         const $th = row.image ? $('<img class="th" alt="">').attr('src', '../uploads/' + row.image)
-          : $('<div class="th">').append($('<i>').addClass(row.icon || 'fa-solid fa-image'));
+          : $('<div class="th">').append($('<i>').addClass(row.icon || ('fa-solid ' + ((S[ent] && S[ent].icon) || 'fa-image'))));
         const $acts = $('<div class="acts">').append(
           $('<span class="badge">').toggleClass('off', !+row.active).text(+row.active ? T.visible : T.hidden),
           ib('fa-arrow-up', T.up, () => move(row, 'up'), n === 0),
@@ -534,7 +575,7 @@ $(function () {
           ib('fa-trash del', T.del, () => { if (confirm(T.confirmDel)) api({ action: 'delete', entity: ent, id: row.id }).done(() => { toast(T.deleted); show(ent); }); })
         );
         $main.append($('<div class="row glass">').append(
-          $('<div class="meta">').append($('<b>').text(row.title_en || row.title_fa || T.untitled), $('<small>').text(row.address || (row.title_fa && row.title_en ? row.title_fa : (row.url || '')))),
+          $('<div class="meta">').append($('<b>').text(row.title_en || row.title_fa || T.untitled), $('<small>').text((fa ? (row.org_fa || row.org_en) : (row.org_en || row.org_fa)) || (fa ? (row.when_fa || row.when_en) : (row.when_en || row.when_fa)) || row.address || (row.title_fa && row.title_en ? row.title_fa : (row.url || '')))),
           $th,
           $acts
         ));

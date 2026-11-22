@@ -443,10 +443,52 @@ function visit_stats(string $lang = 'fa'): array
     return ['days' => $days, 'today' => $today, 'week' => $week, 'month' => $month, 'clicks' => click_list($lang), 'donors' => donate_names_on() ? donor_list() : []];
 }
 
+function records_ready(): bool
+{
+    static $done = false;
+    if ($done) {
+        return true;
+    }
+    try {
+        $cv = "id INT AUTO_INCREMENT PRIMARY KEY,
+            title_fa VARCHAR(190) NOT NULL DEFAULT '',
+            title_en VARCHAR(190) NOT NULL DEFAULT '',
+            org_fa VARCHAR(190) NOT NULL DEFAULT '',
+            org_en VARCHAR(190) NOT NULL DEFAULT '',
+            when_fa VARCHAR(80) NOT NULL DEFAULT '',
+            when_en VARCHAR(80) NOT NULL DEFAULT '',
+            desc_fa TEXT,
+            desc_en TEXT,
+            sort INT NOT NULL DEFAULT 0,
+            active TINYINT(1) NOT NULL DEFAULT 1";
+        db()->exec("CREATE TABLE IF NOT EXISTS jobs ($cv) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        db()->exec("CREATE TABLE IF NOT EXISTS edu ($cv) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        db()->exec("CREATE TABLE IF NOT EXISTS papers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title_fa VARCHAR(190) NOT NULL DEFAULT '',
+            title_en VARCHAR(190) NOT NULL DEFAULT '',
+            when_fa VARCHAR(80) NOT NULL DEFAULT '',
+            when_en VARCHAR(80) NOT NULL DEFAULT '',
+            desc_fa TEXT,
+            desc_en TEXT,
+            url VARCHAR(500) NOT NULL DEFAULT '',
+            sort INT NOT NULL DEFAULT 0,
+            active TINYINT(1) NOT NULL DEFAULT 1
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $done = true;
+    } catch (Throwable $e) {
+        return false;
+    }
+    return true;
+}
+
 function track_click(string $kind, int $id): void
 {
     try {
-        if (!in_array($kind, ['links', 'slides', 'projects'], true) || $id < 1) {
+        if (!in_array($kind, ['links', 'slides', 'projects', 'papers'], true) || $id < 1) {
+            return;
+        }
+        if ($kind === 'papers' && !records_ready()) {
             return;
         }
         $ua = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
@@ -484,13 +526,16 @@ function click_list(string $lang): array
                 $faT = trim((string) $r['title_fa']);
                 $enT = trim((string) $r['title_en']);
                 $title = $en ? ($enT !== '' ? $enT : $faT) : ($faT !== '' ? $faT : $enT);
-                $key = ['slides' => 'slide', 'links' => 'link', 'projects' => 'project'][$kind] ?? 'link';
+                $key = ['slides' => 'slide', 'links' => 'link', 'projects' => 'project', 'papers' => 'paper'][$kind] ?? 'link';
                 $out[] = ['t' => $title !== '' ? $title : ('#' . $r['id']), 'n' => $map[$kind . ':' . $r['id']] ?? 0, 'k' => $key];
             }
         };
         $add('slides', " AND url <> ''");
         $add('links', '');
         $add('projects', " AND url <> ''");
+        if (records_ready()) {
+            $add('papers', " AND url <> ''");
+        }
         return $out;
     } catch (Throwable $e) {
         return [];

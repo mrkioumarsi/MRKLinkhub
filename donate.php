@@ -65,6 +65,14 @@ $site = $b['showFa'] && $b['showEn']
     ? trim($enName . ' | ' . $faName, ' |')
     : ($lang === 'fa' ? ($faName !== '' ? $faName : $enName) : ($enName !== '' ? $enName : $faName));
 $pageTitle = trim($site . ' | ' . $who, ' |');
+$desc = $lang === 'fa' ? ('حمایت از ' . ($site !== '' ? $site : $who)) : ('Donate to ' . ($site !== '' ? $site : $who));
+$canonical = mrk_canonical('donate.php', $b['forced'] !== '' ? ('?lang=' . $b['forced']) : '');
+$image = '';
+if (!empty($s['avatar'])) {
+    $image = mrk_abs('uploads/' . rawurlencode((string) $s['avatar']));
+} elseif (is_file(ROOT . '/uploads/icon-512.png')) {
+    $image = mrk_abs('uploads/icon-512.png');
+}
 $force = $b['forced'] !== '' ? ' data-langforce="' . e($b['forced']) . '"' : '';
 ?>
 <!doctype html>
@@ -72,7 +80,10 @@ $force = $b['forced'] !== '' ? ' data-langforce="' . e($b['forced']) . '"' : '';
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title><?= e($pageTitle) ?></title>
+<?php public_meta($pageTitle, $desc, $canonical, $image, $lang, !empty($b['donateOn'])); ?>
+<?php if (count($b['enabled']) > 1): foreach ($b['enabled'] as $code): ?>
+<link rel="alternate" hreflang="<?= e($code) ?>" href="<?= e(mrk_canonical('donate.php', '?lang=' . $code)) ?>">
+<?php endforeach; endif ?>
 <meta name="theme-color" content="<?= e($color) ?>">
 <link rel="manifest" href="manifest.php">
 <link rel="apple-touch-icon" href="<?= !empty($s['icon']) ? 'uploads/icon-192.png?v=' . e($s['icon']) : 'assets/icon.svg' ?>">

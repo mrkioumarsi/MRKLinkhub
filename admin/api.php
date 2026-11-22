@@ -151,6 +151,9 @@ if (!isset($S[$ent])) {
 if ($ent === 'donates') {
     donates_ready();
 }
+if (in_array($ent, ['jobs', 'edu', 'papers'], true)) {
+    records_ready();
+}
 
 if ($a === 'list') {
     if ($ent === 'settings') {
@@ -167,6 +170,8 @@ if ($a === 'save') {
         'donate' => ['donate_on', 'donate_ask'],
         'tz' => ['tz'],
         'help' => ['show_help'],
+        'seo' => ['seo_title_fa', 'seo_title_en', 'seo_desc_fa', 'seo_desc_en'],
+        'order' => ['section_order'],
     ];
     $only = null;
     if ($ent === 'settings') {
@@ -185,6 +190,23 @@ if ($a === 'save') {
             continue; // order is managed with the arrow buttons
         }
         $x = trim((string) ($_POST[$k] ?? ''));
+        if ($k === 'section_order') {
+            $allow = ['me', 'slides', 'links', 'jobs', 'projects', 'edu', 'papers'];
+            $got = [];
+            foreach (explode(',', $x) as $bit) {
+                $bit = trim($bit);
+                if (in_array($bit, $allow, true) && !in_array($bit, $got, true)) {
+                    $got[] = $bit;
+                }
+            }
+            foreach ($allow as $bit) {
+                if (!in_array($bit, $got, true)) {
+                    $got[] = $bit;
+                }
+            }
+            $v[$k] = implode(',', $got);
+            continue;
+        }
         if ($d[1] === 'check') {
             $x = (int) !empty($_POST[$k]);
         } elseif ($d[1] === 'number') {
@@ -229,6 +251,13 @@ if ($a === 'save') {
             $st->execute([$k, $x]);
         }
         out(['ok' => 1]);
+    }
+    if (in_array($ent, ['jobs', 'edu', 'papers'], true)) {
+        $fa = trim((string) ($v['title_fa'] ?? ''));
+        $en = trim((string) ($v['title_en'] ?? ''));
+        if ($fa === '' && $en === '') {
+            out(['error' => 'Title is required'], 422);
+        }
     }
     $id = (int) ($_POST['id'] ?? 0);
     if (!$id) {
