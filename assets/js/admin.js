@@ -90,7 +90,7 @@ $(function () {
   });
   if (!S) return;
 
-  const langs = (cfg.langs && cfg.langs.length) ? cfg.langs : ['fa', 'en'];
+  let langs = (cfg.langs && cfg.langs.length) ? cfg.langs : ['fa', 'en'];
   const T = fa ? {
     dash: 'پیشخوان', visits: 'بازدید', range: '۳۰ روز گذشته',
     today: 'امروز', week: 'هفته گذشته', month: 'ماه گذشته',
@@ -265,7 +265,10 @@ $(function () {
     if (k === 'tz' || type === 'url' || type === 'number' || type === 'color' || type === 'addr') $i.attr({ dir: 'ltr', lang: 'en' });
     else if (/_fa$/.test(k)) $i.attr({ dir: 'rtl', lang: 'fa' });
     else if (/_en$/.test(k)) $i.attr({ dir: 'ltr', lang: 'en' });
-    return $('<label class="f">').toggleClass('wide', type === 'textarea' || type === 'addr').append($('<span>').text(lab(def[0])), $i);
+    const $lab = $('<label class="f">').toggleClass('wide', type === 'textarea' || type === 'addr');
+    if (k === 'tz') $i.attr('aria-label', lab(def[0]));
+    else $lab.append($('<span>').text(lab(def[0])));
+    return $lab.append($i);
   }
 
   function form(ent, row, done, cancel) {
@@ -302,8 +305,8 @@ $(function () {
       ['pwa', T.gPwa, ['app_name', 'short_name', 'theme_color', 'icon']],
       ['seo', T.gSeo, ['seo_title_fa', 'seo_title_en', 'seo_desc_fa', 'seo_desc_en']],
       ['donate', T.gDonate, ['donate_on', 'donate_ask']],
-      ['tz', T.gTz, ['tz']],
-      ['help', T.gHelp, ['show_help']]
+      ['help', T.gHelp, ['show_help']],
+      ['tz', T.gTz, ['tz']]
     ];
     return groups.map(([id, title, keys]) => {
       const $g = $('<div class="grid">');
@@ -342,7 +345,22 @@ $(function () {
         e.preventDefault();
         api($(this).serialize() + '&action=save&entity=settings&part=' + id).done(() => {
           toast(T.saved);
-          if (id === 'lang' || id === 'donate') location.reload();
+          if (id === 'donate') {
+            const on = $(this).find('[name=donate_on]').prop('checked');
+            cfg.donate = !!on;
+            cfg.donateAsk = !!on && $(this).find('[name=donate_ask]').prop('checked');
+            syncDonateNav();
+          }
+          if (id === 'lang') {
+            const next = ['fa', 'en'].filter(l => $(this).find('[name=show_' + l + ']').prop('checked'));
+            langs = next.length ? next : ['fa'];
+            cfg.langs = langs;
+            const ui = $(this).find('[name=default_lang]').val();
+            if (ui && ui !== (fa ? 'fa' : 'en')) {
+              try { sessionStorage.setItem('mrk-open', 'settings'); } catch (err) {}
+              location.reload();
+            }
+          }
         });
       });
     });
@@ -356,12 +374,12 @@ $(function () {
     };
     let order = String(saved || '').split(',').map(s => s.trim()).filter(id => ids.indexOf(id) >= 0);
     ids.forEach(id => { if (order.indexOf(id) < 0) order.push(id); });
-    const $list = $('<div>');
+    const $list = $('<div class="order-list">');
     const paint = () => {
       $list.empty();
       order.forEach((id, n) => {
-        $list.append($('<div class="row glass">').append(
-          $('<div class="meta">').append($('<b>').text(names[id] || id)),
+        $list.append($('<div class="order-row">').append(
+          $('<b>').text(names[id] || id),
           $('<div class="acts">').append(
             ib('fa-arrow-up', T.up, () => { if (!n) return; const t = order[n - 1]; order[n - 1] = order[n]; order[n] = t; paint(); }, n === 0),
             ib('fa-arrow-down', T.down, () => { if (n >= order.length - 1) return; const t = order[n + 1]; order[n + 1] = order[n]; order[n] = t; paint(); }, n === order.length - 1)
@@ -583,12 +601,29 @@ $(function () {
     });
   }
 
-  $('<button class="btn" type="button">').append($('<i class="fa-solid fa-chart-line">'), $('<span>').text(T.dash)).data('k', '_dash').appendTo('#nav');
-  Object.keys(S).filter(k => k !== 'settings' && (k !== 'donates' || cfg.donate)).concat(S.settings ? ['settings'] : []).forEach(k => {
+  const navBtn = k => {
     const v = S[k];
-    $('<button class="btn" type="button">').append($('<i>').addClass('fa-solid ' + v.icon), $('<span>').text(lab(v.label))).data('k', k).appendTo('#nav');
-  });
+    return $('<button class="btn" type="button">').append($('<i>').addClass('fa-solid ' + v.icon), $('<span>').text(lab(v.label))).data('k', k);
+  };
+  function syncDonateNav() {
+    const $have = $('#nav button').filter((_, b) => $(b).data('k') === 'donates');
+    if (cfg.donate && !$have.length && S.donates) {
+      const $settings = $('#nav button').filter((_, b) => $(b).data('k') === 'settings');
+      const $btn = navBtn('donates');
+      if ($settings.length) $settings.before($btn);
+      else $btn.appendTo('#nav');
+    } else if (!cfg.donate) {
+      $have.remove();
+    }
+  }
+  $('<button class="btn" type="button">').append($('<i class="fa-solid fa-chart-line">'), $('<span>').text(T.dash)).data('k', '_dash').appendTo('#nav');
+  Object.keys(S).filter(k => k !== 'settings' && (k !== 'donates' || cfg.donate)).concat(S.settings ? ['settings'] : []).forEach(k => navBtn(k).appendTo('#nav'));
   $('#nav').on('click', 'button', function () { setNav(false); show($(this).data('k')); });
   $('#out').on('click', () => api({ action: 'logout' }).done(() => location.reload()));
-  show('_dash');
+  let stay = '';
+  try {
+    stay = sessionStorage.getItem('mrk-open') || '';
+    sessionStorage.removeItem('mrk-open');
+  } catch (err) {}
+  show(stay === 'settings' ? 'settings' : '_dash');
 });

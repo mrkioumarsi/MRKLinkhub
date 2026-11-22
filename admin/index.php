@@ -58,9 +58,9 @@ $cfg = ['csrf' => $_SESSION['csrf'], 'langs' => $langs, 'lang' => $ui, 'donate' 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Vazirmatn:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="../assets/css/app.css?v=8">
-<link rel="stylesheet" href="../assets/css/admin.css?v=15">
+<link rel="stylesheet" href="../assets/css/admin.css?v=16">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="../assets/js/admin.js?v=17" defer></script>
+<script src="../assets/js/admin.js?v=18" defer></script>
 </head>
 <body data-cfg="<?= e(json_encode($cfg)) ?>">
 <?php if (!$in): ?>

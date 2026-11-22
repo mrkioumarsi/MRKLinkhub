@@ -2,30 +2,23 @@
 
 Bilingual link page (Persian and English) with an admin panel, visit and click stats, and a one-click update from GitHub. It runs on PHP 8 and MySQL. No Composer and no command-line git are required on the server.
 
+- Public page in Persian and English, with a light and dark theme
+- Profile, slider, links, work, education, projects, and papers
+- Admin panel for the content and the settings
+- Visit and click statistics
+- Optional donate page
+- SEO fields and a movable section order
+- Update from the admin panel
+
 ## Install on cPanel
 
-1. Open **MultiPHP Manager** and set the domain to **PHP 8.0 or newer**. In **Select PHP Version** (or MultiPHP INI), enable `pdo_mysql` and `zip`. Enable `curl` as well when you want updates from the admin panel.
-2. Open **MySQL Databases**.
-   1. Create a database.
-   2. Create a database user and set its password.
-   3. Add that user to the database with **All Privileges**.
-   4. Write down the host (usually `localhost`), the full database name, the full username, and the password. cPanel adds your account name in front of the database name and the username.
-3. Open the [releases page](https://github.com/mrkioumarsi/MRKLinkhub/releases) and download the **Source code (zip)** of the latest release.
-4. In **File Manager**, go to `public_html`, or to the document root of the addon domain.
-5. Upload the zip into that folder and extract it.
-6. Move the files up if they were extracted into a subfolder. `index.php` must sit directly in the document root, next to the `admin`, `inc`, `install`, and `uploads` folders.
-7. Open the `uploads` folder and set its permission to `755`. The installer creates this folder when the server allows it.
-8. Visit `https://your-domain.example/install/`.
-9. Fill in the form:
-   - Database host, database name, database user, and database password from step 2.
-   - Admin username: 3 to 30 letters or digits.
-   - Admin password: at least 10 characters.
-10. Click **Install**. The installer creates the tables, writes `inc/config.php`, and deletes itself.
-11. If the `install` folder is still there, delete it.
-12. Open `https://your-domain.example/admin/` and sign in.
-13. In **Settings**, save the profile, the languages, and the PWA icon. Use a square PNG, JPG, or WebP of at least 512 pixels for the icon.
+1. Set the domain to **PHP 8.0 or newer** and turn on `pdo_mysql`, `zip`, and `curl`.
+2. In **MySQL Databases**, create a database and a user, then give that user **All Privileges** on the database. Keep the host (usually `localhost`), the full database name, the full username, and the password. cPanel adds your account name in front of the database name and the username.
+3. Download the latest **Source code (zip)** from the [releases page](https://github.com/mrkioumarsi/MRKLinkhub/releases). In **File Manager**, upload it to `public_html` (or the addon domain root) and extract it. `index.php` must sit in that folder, next to `admin`, `inc`, `install`, and `uploads`. If the zip created an extra folder, move the files up.
+4. Open `https://your-domain.example/install/`. Enter the database details, an admin username (3 to 30 letters or digits), and an admin password (at least 10 characters), then click **Install**.
+5. Open `https://your-domain.example/admin/` and sign in. If the `install` folder is still there, delete it. If images fail to save, set the `uploads` folder to `755`.
 
-`inc/config.php` holds the database password. Do not share that file or commit it. The sample without secrets is `inc/config.sample.php`.
+The installer creates the tables, writes `inc/config.php`, and deletes itself. `inc/config.php` holds the database password. Do not share that file or commit it. The sample without secrets is `inc/config.sample.php`.
 
 ## Update from the admin panel
 
@@ -41,12 +34,6 @@ The update downloads the release zip over HTTPS and replaces the site files. It 
 - the existing root `.htaccess`, so a cPanel PHP handler is not removed
 
 The server needs PHP `ZipArchive`. It does not need shell access or a `git` binary. If the home directory is writable, the zip is unpacked outside the public site and then removed.
-
-## What is included
-
-- Public page: profile, slider, links, work, projects, education, papers, language switch, light and dark theme. Empty sections stay hidden. Section order and SEO text are set in the admin.
-- Admin: dashboard, content, settings, and password. The admin can be added to the home screen from `/admin/`.
-- One visit is counted per browser per day. Link, slide, and project clicks are counted whenever they happen.
 
 ## License
 
