@@ -108,6 +108,39 @@
       if (text) copyText(this, text);
     });
     const iconOk = /^fa-(solid|brands) fa-[a-z0-9-]+$/;
+    const drawQr = box => {
+      if (!box || box.dataset.done || typeof qrcode !== 'function') return;
+      const text = box.getAttribute('data-qr') || '';
+      if (!text) return;
+      try {
+        if (qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs['UTF-8']) qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+        const q = qrcode(0, 'M');
+        q.addData(text);
+        q.make();
+        const cell = 4, margin = 2, n = q.getModuleCount();
+        const size = n * cell + margin * 2;
+        let marks = '';
+        for (let row = 0; row < n; row++) {
+          for (let col = 0; col < n; col++) {
+            if (!q.isDark(row, col)) continue;
+            const x = (col * cell + margin - 0.4).toFixed(2);
+            const y = (row * cell + margin - 0.4).toFixed(2);
+            marks += '<rect x="' + x + '" y="' + y + '" width="4.8" height="4.8" rx="1.15" fill="#000"/>';
+          }
+        }
+        box.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" role="img"><rect width="100%" height="100%" fill="#fff"/>' + marks + '</svg>';
+        box.dataset.done = '1';
+      } catch (err) {}
+    };
+    const openAcc = item => {
+      if (!item) return;
+      item.classList.add('open');
+      const head = item.querySelector('.acc-h');
+      if (head) head.setAttribute('aria-expanded', 'true');
+      const body = item.querySelector('.acc-b');
+      if (body) body.hidden = false;
+      drawQr(item.querySelector('.qr'));
+    };
     const paintWallets = rows => {
       const list = document.getElementById('wallet-list');
       const empty = document.getElementById('wallet-empty');
@@ -167,6 +200,7 @@
         art.append(head, body);
         list.append(art);
       });
+      openAcc(list.querySelector('.acc'));
     };
     let gateBusy = false;
     $('#gate').on('submit', function (e) {
@@ -228,34 +262,9 @@
         if (head) head.setAttribute('aria-expanded', 'false');
       });
       if (open) return;
-      item.classList.add('open');
-      this.setAttribute('aria-expanded', 'true');
-      const body = item.querySelector('.acc-b');
-      if (body) body.hidden = false;
-      const box = item.querySelector('.qr');
-      if (!box || box.dataset.done || typeof qrcode !== 'function') return;
-      const text = box.getAttribute('data-qr') || '';
-      if (!text) return;
-      try {
-        if (qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs['UTF-8']) qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
-        const q = qrcode(0, 'M');
-        q.addData(text);
-        q.make();
-        const cell = 4, margin = 2, n = q.getModuleCount();
-        const size = n * cell + margin * 2;
-        let marks = '';
-        for (let row = 0; row < n; row++) {
-          for (let col = 0; col < n; col++) {
-            if (!q.isDark(row, col)) continue;
-            const x = (col * cell + margin - 0.4).toFixed(2);
-            const y = (row * cell + margin - 0.4).toFixed(2);
-            marks += '<rect x="' + x + '" y="' + y + '" width="4.8" height="4.8" rx="1.15" fill="#000"/>';
-          }
-        }
-        box.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" role="img"><rect width="100%" height="100%" fill="#fff"/>' + marks + '</svg>';
-        box.dataset.done = '1';
-      } catch (err) {}
+      openAcc(item);
     });
+    openAcc(document.querySelector('#wallet-list .acc'));
 
     $('.slider').each(function () {
       const $s = $(this), $t = $s.find('.track'), n = $t.children().length;

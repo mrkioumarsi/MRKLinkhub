@@ -97,7 +97,7 @@ $(function () {
     donors: 'آمار حمایت', went: 'رفته صفحه دونیت', noDonors: 'هنوز کسی به صفحه حمایت نرفته',
     kindLink: 'لینک', kindSlide: 'اسلاید', kindProject: 'پروژه',
     gIntro: 'تنظیمات معرفی', gLang: 'تنظیمات زبان', gPwa: 'تنظیمات برنامه و PWA',
-    gDonate: 'حمایت', gHelp: 'لینک سازنده',
+    gDonate: 'حمایت', gTz: 'منطقه زمانی', gHelp: 'لینک سازنده',
     gUpdate: 'آپدیت از گیت‌هاب', currentVer: 'نسخه فعلی', latestVer: 'آخرین نسخه',
     updateNow: 'بروزرسانی', updating: 'در حال بروزرسانی…', updated: 'بروزرسانی شد',
     reinstall: 'نصب مجدد نسخه فعلی', reinstalling: 'در حال نصب مجدد…', reinstalled: 'نسخه فعلی دوباره نصب شد',
@@ -119,7 +119,7 @@ $(function () {
     donors: 'Donate', went: 'went to the donate page', noDonors: 'Nobody has opened the donate page yet',
     kindLink: 'Link', kindSlide: 'Slide', kindProject: 'Project',
     gIntro: 'Profile', gLang: 'Language', gPwa: 'App and PWA',
-    gDonate: 'Donate', gHelp: 'Creator link',
+    gDonate: 'Donate', gTz: 'Timezone', gHelp: 'Creator link',
     gUpdate: 'Update from GitHub', currentVer: 'Current', latestVer: 'Latest',
     updateNow: 'Update', updating: 'Updating…', updated: 'Updated',
     reinstall: 'Reinstall current version', reinstalling: 'Reinstalling…', reinstalled: 'Current version reinstalled',
@@ -147,7 +147,8 @@ $(function () {
     'PWA name': 'نام برنامه', 'PWA short name': 'نام کوتاه برنامه',
     'PWA theme color': 'رنگ برنامه', 'PWA icon (square, 512px or larger)': 'آیکون برنامه (مربع، حداقل ۵۱۲)',
     'Image': 'تصویر', 'Icon': 'آیکون', 'Address': 'آدرس',
-    'Donate enabled': 'فعال‌سازی حمایت', 'Show creator link': 'نمایش لینک سازنده',
+    'Donate enabled': 'فعال‌سازی حمایت', 'Ask for donor name': 'درخواست نام حمایت کننده',
+    'Timezone': 'منطقه زمانی', 'Show creator link': 'نمایش لینک سازنده',
     'Description (Persian)': 'توضیح (فارسی)', 'Description (English)': 'توضیح (انگلیسی)'
   };
   const lab = s => (fa && labels[s]) ? labels[s] : s;
@@ -244,6 +245,7 @@ $(function () {
       let list = opts || [];
       if (k === 'default_lang') list = list.filter(o => langs.indexOf(o) >= 0);
       if (!list.length) list = opts || [];
+      if (k === 'tz' && list.indexOf(val) < 0) val = 'Asia/Tehran';
       $i = $('<select>').append(list.map(o => {
         let text = String(o).replace(/^fa-\w+ fa-/, '');
         if (k === 'default_lang') text = lab(o === 'fa' ? 'Persian' : 'English');
@@ -252,7 +254,7 @@ $(function () {
     }
     else $i = $('<input>').attr('type', type);
     $i.attr('name', k).val(val != null ? val : (type === 'color' ? '#6c5ce7' : type === 'number' ? 0 : ''));
-    if (type === 'url' || type === 'number' || type === 'color' || type === 'addr') $i.attr({ dir: 'ltr', lang: 'en' });
+    if (k === 'tz' || type === 'url' || type === 'number' || type === 'color' || type === 'addr') $i.attr({ dir: 'ltr', lang: 'en' });
     else if (/_fa$/.test(k)) $i.attr({ dir: 'rtl', lang: 'fa' });
     else if (/_en$/.test(k)) $i.attr({ dir: 'ltr', lang: 'en' });
     return $('<label class="f">').toggleClass('wide', type === 'textarea' || type === 'addr').append($('<span>').text(lab(def[0])), $i);
@@ -290,12 +292,23 @@ $(function () {
       ['intro', T.gIntro, ['name_fa', 'name_en', 'bio_fa', 'bio_en', 'avatar']],
       ['lang', T.gLang, ['default_lang', 'show_fa', 'show_en']],
       ['pwa', T.gPwa, ['app_name', 'short_name', 'theme_color', 'icon']],
-      ['donate', T.gDonate, ['donate_on']],
+      ['donate', T.gDonate, ['donate_on', 'donate_ask']],
+      ['tz', T.gTz, ['tz']],
       ['help', T.gHelp, ['show_help']]
     ];
     return groups.map(([id, title, keys]) => {
       const $g = $('<div class="grid">');
       keys.forEach(k => $g.append(field(k, S.settings.fields[k], row[k])));
+      if (id === 'donate') {
+        const $on = $g.find('[name=donate_on]');
+        const $ask = $g.find('[name=donate_ask]').closest('.sw');
+        const showAsk = () => {
+          if ($on.prop('checked')) $ask.stop(true, true).slideDown(180, function () { $(this).css('display', 'flex'); });
+          else $ask.stop(true, true).slideUp(180);
+        };
+        if (!$on.prop('checked')) $ask.hide();
+        $on.on('change', showAsk);
+      }
       if (id === 'lang') {
         const sync = () => {
           const on = ['fa', 'en'].filter(l => $g.find('[name=show_' + l + ']').prop('checked'));
@@ -414,6 +427,7 @@ $(function () {
     const $stats = $('<div class="stats">').append(box('today'), box('week'), box('month'));
     const $hits = $('<div class="hit-list">');
     const $hitSum = $('<span>');
+    const showDonors = !!(cfg.donate && cfg.donateAsk);
     const $dons = $('<div class="hit-list">');
     const kindWord = k => k === 'slide' ? T.kindSlide : (k === 'project' ? T.kindProject : T.kindLink);
     $main.append(
@@ -422,9 +436,11 @@ $(function () {
         $plot, $range
       ),
       $stats,
-      $('<div class="glass hits">').append($('<div class="chart-head">').append($('<b>').text(T.clicks), $hitSum), $hits),
-      $('<div class="glass hits">').append($('<div class="chart-head">').append($('<b>').text(T.donors)), $dons)
+      $('<div class="glass hits">').append($('<div class="chart-head">').append($('<b>').text(T.clicks), $hitSum), $hits)
     );
+    if (showDonors) {
+      $main.append($('<div class="glass hits">').append($('<div class="chart-head">').append($('<b>').text(T.donors)), $dons));
+    }
     const paint = r => {
       const days = r.days || [];
       if (days.length) {
@@ -463,6 +479,7 @@ $(function () {
           $h.find('.hit-bar i').css('width', Math.round(n / max * 100) + '%');
         });
       }
+      if (!showDonors) return;
       const donors = r.donors || [];
       const dkeys = donors.map(row => String(row.n || '') + '\n' + (+row.c || 0));
       const $haveD = $dons.children('.hit');

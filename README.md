@@ -54,6 +54,4 @@ MRKLinkhub is free and open source under the [MIT License](LICENSE).
 
 ## Donate
 
-USDT, BEP20 on BSC:
-
-`0xAec9F6Ad80940a50e35F453d3354CA8379d0CFaD`
+https://mrkioumarsi.ir/donate.php?lang=en

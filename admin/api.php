@@ -164,7 +164,8 @@ if ($a === 'save') {
         'intro' => ['name_fa', 'name_en', 'bio_fa', 'bio_en', 'avatar'],
         'lang' => ['default_lang', 'show_fa', 'show_en'],
         'pwa' => ['app_name', 'short_name', 'theme_color', 'icon'],
-        'donate' => ['donate_on'],
+        'donate' => ['donate_on', 'donate_ask'],
+        'tz' => ['tz'],
         'help' => ['show_help'],
     ];
     $only = null;
@@ -199,7 +200,7 @@ if ($a === 'save') {
                 out(['error' => 'Address is too long'], 422);
             }
         } elseif ($d[1] === 'select' && !in_array($x, $d[2], true)) {
-            $x = $d[2][0];
+            $x = $k === 'tz' ? 'Asia/Tehran' : $d[2][0];
         } elseif ($d[1] === 'image' && $x !== '' && !preg_match('/^[a-f0-9]{16}\.(jpg|png|webp)$/', $x)) {
             $x = '';
         } elseif ($d[1] === 'color' && !preg_match('/^#[0-9a-f]{6}$/i', $x)) {

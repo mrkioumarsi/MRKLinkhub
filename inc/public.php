@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 const MRK_CSS = '13';
-const MRK_JS = '13';
+const MRK_JS = '14';
 
 function public_bundle(bool $queryLang = false): array
 {
@@ -50,6 +50,7 @@ function public_bundle(bool $queryLang = false): array
         'forced' => $forced,
         'showHelp' => ($s['show_help'] ?? '1') !== '0',
         'donateOn' => ($s['donate_on'] ?? '0') === '1',
+        'askName' => ($s['donate_ask'] ?? '1') !== '0',
         'L' => $L,
     ];
 }

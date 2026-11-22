@@ -37,6 +37,8 @@ return [
         'theme_color' => ['PWA theme color', 'color'],
         'icon' => ['PWA icon (square, 512px or larger)', 'image'],
         'donate_on' => ['Donate enabled', 'check'],
+        'donate_ask' => ['Ask for donor name', 'check'],
+        'tz' => ['Timezone', 'select', timezone_identifiers_list()],
         'show_help' => ['Show creator link', 'check'],
     ]],
     'slides' => ['label' => 'Slider', 'icon' => 'fa-images', 'fields' => $title + ['image' => ['Image', 'image']] + $tail],

@@ -25,6 +25,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         if (($s['donate_on'] ?? '0') !== '1') {
             $send(['error' => 'Donate is off'], 403);
         }
+        if (($s['donate_ask'] ?? '1') === '0') {
+            $send(['error' => 'Name signup is off'], 403);
+        }
         $wait = lock_wait('donate');
         if ($wait > 0) {
             $send(['error' => 'Too many attempts', 'wait' => $wait], 429);
@@ -43,21 +46,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $send(['error' => 'Too many attempts', 'wait' => $wait], 429);
         }
         donor_add($name);
-        $schema = require __DIR__ . '/inc/schema.php';
-        $coinIcons = $schema['donates']['fields']['icon'][2];
-        donates_ready();
-        $rows = db()->query("SELECT icon, title_fa, title_en, address FROM donates WHERE active = 1 AND address <> '' ORDER BY sort, id")->fetchAll();
-        $out = [];
-        foreach ($rows as $x) {
-            $icon = in_array($x['icon'], $coinIcons, true) ? $x['icon'] : $coinIcons[0];
-            $out[] = [
-                'icon' => $icon,
-                'title_fa' => (string) $x['title_fa'],
-                'title_en' => (string) $x['title_en'],
-                'address' => (string) $x['address'],
-            ];
-        }
-        $send(['ok' => 1, 'rows' => $out]);
+        $send(['ok' => 1, 'rows' => donate_rows()]);
     } catch (Throwable $e) {
         $send(['error' => 'Request failed'], 500);
     }
@@ -104,6 +93,37 @@ $force = $b['forced'] !== '' ? ' data-langforce="' . e($b['forced']) . '"' : '';
   <section class="glass pad donate-gate">
     <h1><span data-l="fa">حمایت</span><span data-l="en">Donate</span></h1>
     <p class="muted"><span data-l="fa">حمایت خاموش است.</span><span data-l="en">Donate is turned off.</span></p>
+  </section>
+<?php elseif (!$b['askName']): ?>
+  <section id="wallets">
+    <h1><span data-l="fa">حمایت</span><span data-l="en">Donate</span></h1>
+    <div id="wallet-list" class="accs">
+<?php
+    $rows = [];
+    try {
+        $rows = donate_rows();
+    } catch (Throwable $e) {
+    }
+    foreach ($rows as $i => $row) {
+        $open = $i === 0;
+        $icon = preg_match('/^fa-(solid|brands) fa-[a-z0-9-]+$/', $row['icon']) ? $row['icon'] : 'fa-solid fa-coins';
+        $faTitle = $row['title_fa'] !== '' ? $row['title_fa'] : $row['title_en'];
+        $enTitle = $row['title_en'] !== '' ? $row['title_en'] : $row['title_fa'];
+        echo '<article class="acc glass' . ($open ? ' open' : '') . '">';
+        echo '<button type="button" class="acc-h" aria-expanded="' . ($open ? 'true' : 'false') . '">';
+        echo '<i class="' . e($icon) . '"></i><span>';
+        echo '<span data-l="fa">' . e($faTitle) . '</span><span data-l="en">' . e($enTitle) . '</span></span>';
+        echo '<i class="fa-solid fa-chevron-down chev"></i></button>';
+        echo '<div class="acc-b"' . ($open ? '' : ' hidden') . '>';
+        echo '<p class="addr" dir="ltr">' . e($row['address']) . '</p>';
+        echo '<div class="qr" data-qr="' . e($row['address']) . '"></div>';
+        echo '<button type="button" class="btn pri text-btn" data-copy="addr" data-icon="fa-solid fa-copy" data-text="' . e($row['address']) . '">';
+        echo '<i class="fa-solid fa-copy"></i><span data-l="fa">کپی آدرس</span><span data-l="en">Copy address</span></button>';
+        echo '</div></article>';
+    }
+?>
+    </div>
+    <p id="wallet-empty" class="glass pad muted"<?= $rows ? ' hidden' : '' ?>><span data-l="fa">هنوز آدرسی ثبت نشده.</span><span data-l="en">No addresses yet.</span></p>
   </section>
 <?php else: ?>
   <form id="gate" class="glass pad donate-gate" data-csrf="<?= e($_SESSION['csrf'] ?? '') ?>">

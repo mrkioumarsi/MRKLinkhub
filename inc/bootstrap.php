@@ -11,7 +11,7 @@ if (!is_file(__DIR__ . '/config.php')) {
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
-date_default_timezone_set('Asia/Tehran');
+mrk_tz();
 
 function request_is_https(): bool
 {
@@ -108,6 +108,26 @@ if (defined('ADMIN')) {
     }
 }
 
+function mrk_tz(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    $tz = 'Asia/Tehran';
+    try {
+        $st = db()->prepare('SELECT v FROM settings WHERE k = ?');
+        $st->execute(['tz']);
+        $got = (string) $st->fetchColumn();
+        if ($got !== '' && in_array($got, timezone_identifiers_list(), true)) {
+            $tz = $got;
+        }
+    } catch (Throwable $e) {
+    }
+    date_default_timezone_set($tz);
+}
+
 function db(): PDO
 {
     static $pdo = null;
@@ -148,6 +168,25 @@ function donates_ready(): void
         active TINYINT(1) NOT NULL DEFAULT 1
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $done = true;
+}
+
+function donate_rows(): array
+{
+    $schema = require __DIR__ . '/schema.php';
+    $coinIcons = $schema['donates']['fields']['icon'][2];
+    donates_ready();
+    $rows = db()->query("SELECT icon, title_fa, title_en, address FROM donates WHERE active = 1 AND address <> '' ORDER BY sort, id")->fetchAll();
+    $out = [];
+    foreach ($rows as $x) {
+        $icon = in_array($x['icon'], $coinIcons, true) ? (string) $x['icon'] : $coinIcons[0];
+        $out[] = [
+            'icon' => $icon,
+            'title_fa' => (string) $x['title_fa'],
+            'title_en' => (string) $x['title_en'],
+            'address' => (string) $x['address'],
+        ];
+    }
+    return $out;
 }
 
 function visits_ready(): void
@@ -250,7 +289,9 @@ function lock_fail(string $scope): int
             return $until - $now;
         }
         $tries = (int) $row['tries'];
-        if ($now - (int) $row['seen'] > 86400) {
+        $seen = (int) $row['seen'];
+        mrk_tz();
+        if ($seen > 0 && date('Y-m-d', $seen) !== date('Y-m-d')) {
             $tries = 0;
         }
         $tries++;
@@ -291,34 +332,88 @@ function donors_ready(): void
     if ($done) {
         return;
     }
-    db()->exec("CREATE TABLE IF NOT EXISTS donors (
+    $db = db();
+    $db->exec("CREATE TABLE IF NOT EXISTS donors (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(80) NOT NULL,
+        ip VARCHAR(45) NOT NULL DEFAULT '',
+        day DATE NULL,
+        n INT UNSIGNED NOT NULL DEFAULT 1,
         t INT UNSIGNED NOT NULL,
+        UNIQUE KEY ip_day (ip, day),
         KEY (t)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $cols = [];
+    foreach ($db->query('SHOW COLUMNS FROM donors') as $c) {
+        $cols[(string) $c['Field']] = true;
+    }
+    if (!isset($cols['ip'])) {
+        $db->exec("ALTER TABLE donors ADD ip VARCHAR(45) NOT NULL DEFAULT ''");
+    }
+    if (!isset($cols['day'])) {
+        $db->exec('ALTER TABLE donors ADD day DATE NULL');
+    }
+    if (!isset($cols['n'])) {
+        $db->exec('ALTER TABLE donors ADD n INT UNSIGNED NOT NULL DEFAULT 1');
+    }
+    $db->exec("DELETE FROM donors WHERE ip = '' OR day IS NULL");
+    $has = false;
+    foreach ($db->query('SHOW INDEX FROM donors') as $ix) {
+        if ((string) ($ix['Key_name'] ?? '') === 'ip_day') {
+            $has = true;
+            break;
+        }
+    }
+    if (!$has) {
+        $db->exec('DELETE d1 FROM donors d1 INNER JOIN donors d2 ON d1.ip = d2.ip AND d1.day = d2.day AND d1.id > d2.id');
+        $db->exec('ALTER TABLE donors ADD UNIQUE KEY ip_day (ip, day)');
+    }
     $done = true;
+}
+
+function donor_purge(): void
+{
+    donors_ready();
+    mrk_tz();
+    db()->prepare("DELETE FROM donors WHERE ip = '' OR day IS NULL OR day < ?")->execute([date('Y-m-d')]);
 }
 
 function donor_add(string $name): void
 {
-    donors_ready();
-    db()->prepare('INSERT INTO donors (name, t) VALUES (?, ?)')->execute([$name, time()]);
+    donor_purge();
+    $ip = client_ip();
+    if ($ip === '') {
+        return;
+    }
+    $now = time();
+    db()->prepare('INSERT INTO donors (name, ip, day, n, t) VALUES (?, ?, ?, 1, ?) ON DUPLICATE KEY UPDATE n = n + 1, t = ?')
+        ->execute([$name, $ip, date('Y-m-d'), $now, $now]);
 }
 
 function donor_list(): array
 {
     try {
-        donors_ready();
-        $rows = db()->query('SELECT name, COUNT(*) n, MAX(t) last_t FROM donors GROUP BY name ORDER BY last_t DESC LIMIT 40')->fetchAll();
+        donor_purge();
+        $st = db()->prepare('SELECT name, n FROM donors WHERE day = ? AND ip <> \'\' ORDER BY t DESC LIMIT 40');
+        $st->execute([date('Y-m-d')]);
         $out = [];
-        foreach ($rows as $r) {
+        foreach ($st->fetchAll() as $r) {
             $out[] = ['n' => (string) $r['name'], 'c' => (int) $r['n']];
         }
         return $out;
     } catch (Throwable $e) {
         return [];
     }
+}
+
+function donate_names_on(): bool
+{
+    try {
+        $s = db()->query("SELECT k, v FROM settings WHERE k IN ('donate_on','donate_ask')")->fetchAll(PDO::FETCH_KEY_PAIR);
+    } catch (Throwable $e) {
+        return false;
+    }
+    return ($s['donate_on'] ?? '0') === '1' && ($s['donate_ask'] ?? '1') !== '0';
 }
 
 function visit_stats(string $lang = 'fa'): array
@@ -345,7 +440,7 @@ function visit_stats(string $lang = 'fa'): array
             $today = $n;
         }
     }
-    return ['days' => $days, 'today' => $today, 'week' => $week, 'month' => $month, 'clicks' => click_list($lang), 'donors' => donor_list()];
+    return ['days' => $days, 'today' => $today, 'week' => $week, 'month' => $month, 'clicks' => click_list($lang), 'donors' => donate_names_on() ? donor_list() : []];
 }
 
 function track_click(string $kind, int $id): void
